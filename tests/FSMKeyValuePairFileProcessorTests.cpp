@@ -16,3 +16,28 @@ TEST(FSMKeyValuePairFileProcessorTests, MixString) {
 
     EXPECT_EQ(result, expected_output);
 }
+
+
+TEST(FSMKeyValuePairFileProcessorTests, ValuesCanBeEmptyStrings) {
+    FSMKeyValuePairFileProcessor processor(',', ':', '\\', std::nullopt);
+
+    std::map<std::string, std::string> expected_output;
+
+    expected_output["idade"] = "";
+    auto result = processor.process("idade:");
+
+    EXPECT_EQ(result, expected_output);
+}
+
+TEST(KeyValuePairFileProcessorTests, DoNotAllowUnescapedSpecialCharactersOnKey) {
+    FSMKeyValuePairFileProcessor processor(',', ':', '\\', std::nullopt);
+
+    std::map<std::string, std::string> expected_output;
+
+    expected_output["idade"] = "24";
+
+
+    auto result = processor.process("no,me,: arthur, idade:24");
+
+    EXPECT_EQ(result, expected_output);
+}
