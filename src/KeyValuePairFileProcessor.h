@@ -7,6 +7,12 @@
 class KeyValuePairFileProcessor {
     static constexpr char SPACE_CHARACTER = ' ';
 
+    enum State {
+        WAITING_KEY,
+        READING_KEY,
+        READING_VALUE,
+    };
+
 public:
     KeyValuePairFileProcessor(char item_delimiter, char key_value_delimiter, char escape_character, std::optional<char> enclosing_character);
 
