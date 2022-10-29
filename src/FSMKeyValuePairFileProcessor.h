@@ -20,8 +20,6 @@ class FSMKeyValuePairFileProcessor {
         END
     };
 
-//    using Callback = std::function<void(char, std::vector<char> &, State &)>;
-
 public:
     FSMKeyValuePairFileProcessor(char item_delimiter, char key_value_delimiter, char escape_character, std::optional<char> enclosing_character);
 
@@ -32,8 +30,6 @@ private:
     char key_value_delimiter;
     char escape_character;
     std::optional<char> enclosing_character;
-
-//    void foo(const std::string & file, size_t & pos, State & state, Callback f) const;
 
     void waitKey(const std::string & file, std::size_t & pos, State & state) const;
     std::string readKey(const std::string & file, std::size_t & pos, State & state) const;

@@ -2,8 +2,6 @@
 
 #include <stdexcept>
 #include <optional>
-#include <vector>
-#include <functional>
 
 FSMKeyValuePairFileProcessor::FSMKeyValuePairFileProcessor(char item_delimiter, char key_value_delimiter, char escape_character, std::optional<char> enclosing_character)
         : item_delimiter(item_delimiter), key_value_delimiter(key_value_delimiter), escape_character(escape_character), enclosing_character(enclosing_character) {
@@ -14,24 +12,13 @@ std::map<std::string, std::string> FSMKeyValuePairFileProcessor::process(const s
 
     auto state = State::WAITING_KEY;
 
+    std::map<std::string, std::string> response;
+
     std::size_t pos = 0;
+
     std::string key;
     std::string value;
 
-    std::map<std::string, std::string> response;
-
-    // "no,me, =  arthur, <idade>:24"
-
-    // timestamp:1651951
-    // class:FuckingProcessor "deu merda aqui"", "processando x"
-    //
-//    print("cheguei aqui")
-//    "print processando arquivo"
-//    tamanho do arquivo: 15, conteudo do arquivo: 610,m nome do arquivo: amnkdao
-//    print()"completei processo"
-
-
-    // "idade:"
     while (state != State::END) {
         switch (state) {
             case State::WAITING_KEY:
@@ -87,27 +74,9 @@ void FSMKeyValuePairFileProcessor::waitKey(const std::string & file, size_t & po
         }
     }
 }
-//void FSMKeyValuePairFileProcessor::foo(const std::string & file, size_t & pos, State & state, std::vector<char >Callback callback) const {
-//    const auto initial_state = state;
-//    bool escape = false;
-//    std::vector<char> element;
-//
-//    while (pos < file.size() && state == initial_state) {
-//        const auto current_character = file[pos++];
-//        if (escape) {
-//            escape = false;
-//            element.push_back(current_character);
-//        } else if (escape_character == current_character) {
-//            escape = true;
-//        } else {
-//            callback(current_character, element, state);
-//        }
-//    }
-//}
-
 
 std::string FSMKeyValuePairFileProcessor::readKey(const std::string & file, size_t & pos, State & state) const {
-    std::vector<char> key;
+    std::string key;
     bool escape = false;
 
     while (pos < file.size() && state == READING_KEY) {
@@ -132,11 +101,11 @@ std::string FSMKeyValuePairFileProcessor::readKey(const std::string & file, size
         state = WAITING_KEY;
     }
 
-    return std::string(key);
+    return key;
 }
 
 std::string FSMKeyValuePairFileProcessor::readEnclosedKey(const std::string & file, size_t & pos, State & state) const {
-    std::vector<char> key;
+    std::string key;
     bool escape = false;
 
     while (pos < file.size() && state == READING_ENCLOSED_KEY) {
@@ -157,7 +126,7 @@ std::string FSMKeyValuePairFileProcessor::readEnclosedKey(const std::string & fi
         state = WAITING_KEY;
     }
 
-    return std::string(key);
+    return key;
 }
 
 void FSMKeyValuePairFileProcessor::readKeyValueDelimiter(const std::string & file, size_t & pos, State & state) const {
@@ -194,7 +163,7 @@ void FSMKeyValuePairFileProcessor::waitValue(const std::string & file, size_t & 
 }
 
 std::string FSMKeyValuePairFileProcessor::readValue(const std::string & file, size_t & pos, State & state) const {
-    std::vector<char> value;
+    std::string value;
     bool escape = false;
 
     if (pos == file.size()) {
@@ -222,14 +191,14 @@ std::string FSMKeyValuePairFileProcessor::readValue(const std::string & file, si
         state = FLUSH_PAIR;
     }
 
-    return std::string(value);
+    return value;
 }
 
 std::string FSMKeyValuePairFileProcessor::readEnclosedValue(const std::string & file, size_t & pos, State & state) const {
-    std::vector<char> value;
+    std::string value;
     bool escape = false;
 
-    while (pos < file.size() && state == READING_VALUE) {
+    while (pos < file.size() && state == READING_ENCLOSED_VALUE) {
         const auto current_character = file[pos++];
         if (escape) {
             escape = false;
@@ -243,6 +212,5 @@ std::string FSMKeyValuePairFileProcessor::readEnclosedValue(const std::string & 
         }
     }
 
-    return std::string(value);
+    return value;
 }
-
