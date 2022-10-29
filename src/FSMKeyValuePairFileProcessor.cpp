@@ -67,7 +67,7 @@ void FSMKeyValuePairFileProcessor::waitKey(const std::string & file, size_t & po
 
     while (pos < file.size() && state == WAITING_KEY) {
         const auto current_character = file[pos];
-        if (SPACE_CHARACTER != current_character) {
+        if (isalpha(current_character) || enclosing_character && current_character == enclosing_character) {
             state = READING_KEY;
         } else {
             pos++;
@@ -168,7 +168,7 @@ std::string FSMKeyValuePairFileProcessor::readValue(const std::string & file, si
 
     if (pos == file.size()) {
         state = FLUSH_PAIR;
-        return "";
+        return value;
     }
 
     while (pos < file.size() && state == READING_VALUE) {
