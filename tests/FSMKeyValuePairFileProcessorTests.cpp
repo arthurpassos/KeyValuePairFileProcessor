@@ -10,13 +10,13 @@ TEST(FSMKeyValuePairFileProcessorTests, MixString) {
 
     std::map<std::string, std::string> expected_output;
 
-    expected_output[R"(no:me)"] = "arthur";
-    expected_output["idade"] = "24";
-    expected_output["altura"] = "179";
-    expected_output["escola"] = "emeb educar";
-    expected_output["universidade"] = "univali";
+    expected_output[R"(no:me)"] = "neymar";
+    expected_output["age"] = "30";
+    expected_output["height"] = "175";
+    expected_output["escola"] = "lupe picasso";
+    expected_output["team"] = "psg";
 
-    auto result = processor.process(R"(9 ads =nm,  no\:me: arthur, idade: 24, daojmskdpoa and a  altura:   179, escola: emeb educar, universidade: univali,)");
+    auto result = processor.process(R"(9 ads =nm,  no\:me: neymar, age: 30, daojmskdpoa and a  height:   175, escola: lupe picasso, team: psg,)");
 
     EXPECT_EQ(result, expected_output);
 }
@@ -27,9 +27,9 @@ TEST(FSMKeyValuePairFileProcessorTests, ValuesCanBeEmptyStrings) {
 
     std::map<std::string, std::string> expected_output;
 
-    expected_output["idade"] = "";
+    expected_output["age"] = "";
 
-    auto result = processor.process("idade:");
+    auto result = processor.process("age:");
 
     EXPECT_EQ(result, expected_output);
 }
@@ -39,9 +39,9 @@ TEST(FSMKeyValuePairFileProcessorTests, DoNotAllowUnescapedSpecialCharactersOnKe
 
     std::map<std::string, std::string> expected_output;
 
-    expected_output["idade"] = "24";
+    expected_output["age"] = "30";
 
-    auto result = processor.process("no,me,: arthur, idade:24");
+    auto result = processor.process("na,me,: neymar, age:30");
 
     EXPECT_EQ(result, expected_output);
 }
@@ -51,11 +51,11 @@ TEST(FSMKeyValuePairFileProcessorTests, QuotedBackSlashKV) {
 
     std::map<std::string, std::string> expected_output;
 
-    expected_output["nome"] = "arthur";
+    expected_output["name"] = "neymar";
     expected_output["favorite_quote"] = "Premature optimization is the root of all evil";
-    expected_output["idade"] = "24";
+    expected_output["age"] = "30";
 
-    auto result = processor.process(R"(nome: arthur, "favorite_quote": "Premature optimization is the root of all evil", idade:24)");
+    auto result = processor.process(R"(name: neymar, "favorite_quote": "Premature optimization is the root of all evil", age:30)");
 
     EXPECT_EQ(result, expected_output);
 }
