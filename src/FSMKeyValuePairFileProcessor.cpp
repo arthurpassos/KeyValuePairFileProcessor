@@ -1,6 +1,5 @@
 #include "FSMKeyValuePairFileProcessor.h"
 
-#include <stdexcept>
 #include <optional>
 
 FSMKeyValuePairFileProcessor::FSMKeyValuePairFileProcessor(char item_delimiter, char key_value_delimiter, char escape_character, std::optional<char> enclosing_character)
@@ -20,101 +19,118 @@ std::map<std::string, std::string> FSMKeyValuePairFileProcessor::process(const s
     std::string value;
 
     while (state != State::END) {
-        switch (state) {
-            case State::WAITING_KEY:
-                waitKey(file, pos, state);
-                break;
-            case State::READING_KEY:
-                key = readKey(file, pos, state);
-                break;
-            case State::READING_ENCLOSED_KEY:
-                key = readEnclosedKey(file, pos, state);
-                break;
-            case State::READING_KV_DELIMITER:
-                readKeyValueDelimiter(file, pos, state);
-                break;
-            case State::WAITING_VALUE:
-                waitValue(file, pos, state);
-                break;
-            case State::READING_VALUE:
-                value = readValue(file, pos, state);
-                break;
-            case State::READING_ENCLOSED_VALUE:
-                value = readEnclosedValue(file, pos, state);
-                break;
-            case State::FLUSH_PAIR:
-                response[key] = value;
-                if (pos == file.size()) {
-                    state = END;
-                } else {
-                    state = State::WAITING_KEY;
-                }
-                break;
-            case END:
-                break;
-        }
+        auto nextState = process(file, pos, state, key, value, response);
+
+        pos = nextState.pos;
+        state = nextState.state;
     }
 
     return response;
 }
 
-void FSMKeyValuePairFileProcessor::waitKey(const std::string & file, size_t & pos, State & state) const {
-
-    if (pos == file.size()) {
-        state = END;
-        return;
+FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::process(const std::string & file, std::size_t pos,
+                                                                              FSMKeyValuePairFileProcessor::State state,
+                                                                              std::string &key, std::string &value,
+                                                                              std::map<std::string, std::string> &response) const {
+    switch (state) {
+        case State::WAITING_KEY:
+            return waitKey(file, pos);
+        case State::READING_KEY:
+            key.clear();
+            return readKey(file, pos, key);
+        case State::READING_ENCLOSED_KEY:
+            key.clear();
+            return readEnclosedKey(file, pos, key);
+        case State::READING_KV_DELIMITER:
+            return readKeyValueDelimiter(file, pos, state);
+        case State::WAITING_VALUE:
+            return waitValue(file, pos);
+        case State::READING_VALUE:
+            value.clear();
+            return readValue(file, pos, state, value);
+        case State::READING_ENCLOSED_VALUE:
+            value.clear();
+            return readEnclosedValue(file, pos, state, value);
+        case State::FLUSH_PAIR:
+            return flushPair(file, pos, key, value, response);
+        case END:
+            return NextState {
+                pos,
+                state
+            };
     }
+}
 
-    while (pos < file.size() && state == WAITING_KEY) {
+
+FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::waitKey(const std::string & file, size_t pos) const {
+
+    while (pos < file.size()) {
         const auto current_character = file[pos];
         if (isalpha(current_character) || enclosing_character && current_character == enclosing_character) {
-            state = READING_KEY;
+            return {
+                pos,
+                State::READING_KEY
+            };
         } else {
             pos++;
         }
     }
+
+    return {
+        pos,
+        State::END
+    };
 }
 
-std::string FSMKeyValuePairFileProcessor::readKey(const std::string & file, size_t & pos, State & state) const {
-    std::string key;
+FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::readKey(const std::string &file, size_t pos, std::string &key) const {
     bool escape = false;
 
-    while (pos < file.size() && state == READING_KEY) {
+    while (pos < file.size()) {
         const auto current_character = file[pos++];
         if (escape) {
             escape = false;
             key.push_back(current_character);
         } else if (enclosing_character && enclosing_character == current_character) {
-            state = READING_ENCLOSED_KEY;
+            return {
+                pos,
+                State::READING_ENCLOSED_KEY
+            };
         } else if (escape_character == current_character) {
             escape = true;
         } else if (current_character == key_value_delimiter) {
-            state = WAITING_VALUE;
+            return {
+                pos,
+                State::WAITING_VALUE
+            };
         } else if (SPACE_CHARACTER == current_character || current_character == item_delimiter) {
-            state = WAITING_KEY;
+            return {
+                pos,
+                State::WAITING_KEY
+            };
         } else {
             key.push_back(current_character);
         }
     }
 
-    if (key.empty() && state != READING_ENCLOSED_KEY) {
-        state = WAITING_KEY;
-    }
-
-    return key;
+    return {
+        pos,
+        State::END
+    };
 }
 
-std::string FSMKeyValuePairFileProcessor::readEnclosedKey(const std::string & file, size_t & pos, State & state) const {
-    std::string key;
+FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::readEnclosedKey(const std::string &file, size_t pos, std::string &key) const {
     bool escape = false;
 
-    while (pos < file.size() && state == READING_ENCLOSED_KEY) {
+    while (pos < file.size()) {
         const auto current_character = file[pos++];
         if (escape) {
             escape = false;
             key.push_back(current_character);
         } else if (enclosing_character == current_character) {
-            state = READING_KV_DELIMITER;
+            return NextState {
+                pos,
+                State::READING_KV_DELIMITER
+            };
         } else if (escape_character == current_character) {
             escape = true;
         } else {
@@ -122,89 +138,90 @@ std::string FSMKeyValuePairFileProcessor::readEnclosedKey(const std::string & fi
         }
     }
 
-    if (key.empty()) {
-        state = WAITING_KEY;
-    }
-
-    return key;
+    return NextState {
+        pos,
+        State::END
+    };
 }
 
-void FSMKeyValuePairFileProcessor::readKeyValueDelimiter(const std::string & file, size_t & pos, State & state) const {
+FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::readKeyValueDelimiter(const std::string & file, size_t pos, State state) const {
 
     if (pos == file.size()) {
-        state = END;
-        return;
-    }
-
-    while (pos < file.size() && state == READING_KV_DELIMITER) {
+        return NextState {
+            pos,
+            State::END
+        };
+    } else {
         const auto current_character = file[pos++];
-        if (current_character != key_value_delimiter) {
-            state = WAITING_KEY;
-        } else {
-            state = WAITING_VALUE;
-        }
+        return NextState {
+            pos,
+            current_character == key_value_delimiter ? State::WAITING_VALUE : State::WAITING_KEY
+        };
     }
 }
 
-void FSMKeyValuePairFileProcessor::waitValue(const std::string & file, size_t & pos, State & state) const {
-    if (pos == file.size()) {
-        state = READING_VALUE;
-        return;
-    }
+FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::waitValue(const std::string &file, size_t pos) const {
 
-    while (pos < file.size() && state == WAITING_VALUE) {
+    while (pos < file.size()) {
         const auto current_character = file[pos];
         if (SPACE_CHARACTER == current_character) {
             pos++;
         } else {
-            state = READING_VALUE;
+            break;
         }
     }
+
+    return NextState {
+        pos,
+        State::READING_VALUE
+    };
 }
 
-std::string FSMKeyValuePairFileProcessor::readValue(const std::string & file, size_t & pos, State & state) const {
-    std::string value;
+FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::readValue(const std::string & file, size_t pos, State state, std::string & value) const {
     bool escape = false;
 
-    if (pos == file.size()) {
-        state = FLUSH_PAIR;
-        return value;
-    }
-
-    while (pos < file.size() && state == READING_VALUE) {
+    while (pos < file.size()) {
         const auto current_character = file[pos++];
         if (escape) {
             escape = false;
             value.push_back(current_character);
         } else if (enclosing_character && enclosing_character == current_character) {
-            state = READING_ENCLOSED_VALUE;
+            return NextState {
+                pos,
+                State::READING_ENCLOSED_VALUE
+            };
         } else if (escape_character == current_character) {
             escape = true;
         } else if (current_character == item_delimiter) {
-            state = FLUSH_PAIR;
+            return NextState {
+                pos,
+                State::FLUSH_PAIR
+            };
         } else {
             value.push_back(current_character);
         }
     }
 
-    if (pos == file.size() && state == READING_VALUE) {
-        state = FLUSH_PAIR;
-    }
-
-    return value;
+    // this allows empty values at the end
+    return NextState {
+        pos,
+        State::FLUSH_PAIR
+    };
 }
 
-std::string FSMKeyValuePairFileProcessor::readEnclosedValue(const std::string & file, size_t & pos, State & state) const {
-    std::string value;
+FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::readEnclosedValue(const std::string & file, size_t pos, State state, std::string & value) const {
     bool escape = false;
 
-    while (pos < file.size() && state == READING_ENCLOSED_VALUE) {
+    while (pos < file.size()) {
         const auto current_character = file[pos++];
         if (escape) {
             escape = false;
             value.push_back(current_character);
         } else if (enclosing_character == current_character) {
-            state = FLUSH_PAIR;
+            return NextState {
+                pos,
+                State::FLUSH_PAIR
+            };
         } else if (escape_character == current_character) {
             escape = true;
         } else {
@@ -212,5 +229,25 @@ std::string FSMKeyValuePairFileProcessor::readEnclosedValue(const std::string & 
         }
     }
 
-    return value;
+    return NextState {
+        pos,
+        State::END
+    };
+}
+
+FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::flushPair(
+        const std::string &file,
+        std::size_t pos,
+        std::string &key,
+        std::string &value,
+        std::map<std::string, std::string> &response) const {
+    response[std::move(key)] = std::move(value);
+
+    key.clear();
+    value.clear();
+
+    return NextState {
+        pos,
+        pos == file.size() ? State::END : State::WAITING_KEY
+    };
 }
