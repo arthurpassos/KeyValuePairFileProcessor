@@ -20,6 +20,11 @@ class FSMKeyValuePairFileProcessor {
         END
     };
 
+    struct NextState {
+        std::size_t pos;
+        State state;
+    };
+
 public:
     FSMKeyValuePairFileProcessor(char item_delimiter, char key_value_delimiter, char escape_character, std::optional<char> enclosing_character);
 
@@ -31,12 +36,19 @@ private:
     char escape_character;
     std::optional<char> enclosing_character;
 
-    void waitKey(const std::string & file, std::size_t & pos, State & state) const;
-    std::string readKey(const std::string & file, std::size_t & pos, State & state) const;
-    std::string readEnclosedKey(const std::string & file, std::size_t & pos, State & state) const;
-    void readKeyValueDelimiter(const std::string & file, std::size_t & pos, State & state) const;
-    void waitValue(const std::string & file, std::size_t & pos, State & state) const;
-    std::string readValue(const std::string & file, std::size_t & pos, State & state) const;
-    std::string readEnclosedValue(const std::string & file, std::size_t & pos, State & state) const;
+    FSMKeyValuePairFileProcessor::NextState waitKey(const std::string &file, size_t pos) const;
+    FSMKeyValuePairFileProcessor::NextState readKey(const std::string &file, size_t pos, std::string &key) const;
+    FSMKeyValuePairFileProcessor::NextState readEnclosedKey(const std::string &file, size_t pos, std::string &key) const;
+    NextState readKeyValueDelimiter(const std::string & file, std::size_t pos, State state) const;
+    FSMKeyValuePairFileProcessor::NextState waitValue(const std::string &file, size_t pos) const;
+    NextState readValue(const std::string & file, std::size_t pos, State state, std::string & value) const;
+    NextState readEnclosedValue(const std::string & file, std::size_t pos, State state, std::string & value) const;
+    FSMKeyValuePairFileProcessor::NextState
+    flushPair(const std::string &file, std::size_t pos, std::string &key, std::string &value,
+              std::map<std::string, std::string> &response) const;
+
+    NextState process(
+            const std::string & file, std::size_t pos,
+            State state, std::string & key, std::string & value, std::map<std::string, std::string> & response) const;
 
 };
