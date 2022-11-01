@@ -39,10 +39,11 @@ private:
     FSMKeyValuePairFileProcessor::NextState waitKey(const std::string &file, size_t pos) const;
     FSMKeyValuePairFileProcessor::NextState readKey(const std::string &file, size_t pos, std::string &key) const;
     FSMKeyValuePairFileProcessor::NextState readEnclosedKey(const std::string &file, size_t pos, std::string &key) const;
-    NextState readKeyValueDelimiter(const std::string & file, std::size_t pos, State state) const;
+    FSMKeyValuePairFileProcessor::NextState readKeyValueDelimiter(const std::string &file, size_t pos) const;
     FSMKeyValuePairFileProcessor::NextState waitValue(const std::string &file, size_t pos) const;
-    NextState readValue(const std::string & file, std::size_t pos, State state, std::string & value) const;
-    NextState readEnclosedValue(const std::string & file, std::size_t pos, State state, std::string & value) const;
+    FSMKeyValuePairFileProcessor::NextState readValue(const std::string &file, size_t pos, std::string &value) const;
+    FSMKeyValuePairFileProcessor::NextState
+    readEnclosedValue(const std::string &file, size_t pos, std::string &value) const;
     FSMKeyValuePairFileProcessor::NextState
     flushPair(const std::string &file, std::size_t pos, std::string &key, std::string &value,
               std::map<std::string, std::string> &response) const;

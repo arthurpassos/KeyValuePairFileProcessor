@@ -11,12 +11,11 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-add_executable(key_value_pair_processing_tests KeyValuePairFileProcessorTests.cpp)
+find_package(nlohmann_json 3.2.0 REQUIRED)
+
 add_executable(key_value_pair_processing_tests_fsm FSMKeyValuePairFileProcessorTests.cpp)
 
-target_link_libraries(key_value_pair_processing_tests GTest::gtest_main key_value_pair_processing_lib)
-target_link_libraries(key_value_pair_processing_tests_fsm GTest::gtest_main key_value_pair_processing_lib)
+target_link_libraries(key_value_pair_processing_tests_fsm GTest::gtest_main key_value_pair_processing_lib nlohmann_json::nlohmann_json)
 
 include(GoogleTest)
-gtest_discover_tests(key_value_pair_processing_tests)
 gtest_discover_tests(key_value_pair_processing_tests_fsm)
