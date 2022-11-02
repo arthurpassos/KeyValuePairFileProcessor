@@ -33,7 +33,7 @@ TEST_P(KeyValuePairExtractorTest, DefaultSpecialCharacters) {
     EXPECT_EQ(result, expected_output);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ValuesCanBeEmptyString,
     KeyValuePairExtractorTest,
     ::testing::ValuesIn(std::initializer_list<KeyValuePairExtractorTestCase> {
@@ -54,7 +54,7 @@ INSTANTIATE_TEST_CASE_P(
     })
 );
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     MixString,
     KeyValuePairExtractorTest,
     ::testing::ValuesIn(std::initializer_list<KeyValuePairExtractorTestCase> {
@@ -69,7 +69,7 @@ INSTANTIATE_TEST_CASE_P(
     })
 );
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Escaping,
     KeyValuePairExtractorTest,
     ::testing::ValuesIn(std::initializer_list<KeyValuePairExtractorTestCase> {
