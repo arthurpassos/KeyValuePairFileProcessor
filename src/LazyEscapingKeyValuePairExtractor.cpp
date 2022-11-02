@@ -82,12 +82,7 @@ KeyValuePairExtractor::NextState LazyEscapingKeyValuePairExtractor::readValue(co
         } else if (escape_character == current_character) {
             escape = true;
         } else if (current_character == item_delimiter) {
-            auto is_value_empty = start_index == pos;
-            if (is_value_empty) {
-
-            }
-
-            value = createElement(file, start_index, start_index == pos ? pos : pos - 1);
+            value = createElement(file, start_index, pos - 1);
             return {
                 pos,
                 State::FLUSH_PAIR
