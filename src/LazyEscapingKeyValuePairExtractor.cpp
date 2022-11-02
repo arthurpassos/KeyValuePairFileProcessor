@@ -81,7 +81,7 @@ KeyValuePairExtractor::NextState LazyEscapingKeyValuePairExtractor::readValue(co
             escape = false;
         } else if (escape_character == current_character) {
             escape = true;
-        } else if (current_character == item_delimiter) {
+        } else if (current_character == item_delimiter || (!std::isalnum(current_character) && current_character != '_')) {
             value = createElement(file, start_index, pos - 1);
             return {
                 pos,

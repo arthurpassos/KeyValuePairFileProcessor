@@ -47,45 +47,54 @@ INSTANTIATE_TEST_SUITE_P(
         MixString,
         LazyEscapingKeyValuePairExtractorTest,
         ::testing::ValuesIn(std::initializer_list<LazyEscapingKeyValuePairExtractorTestCase> {
-                R"(9 ads =nm,  no\:me: neymar, age: 30, daojmskdpoa and a  height:   175, school: lupe picasso, team: psg,)",
+            {
+                R"(9 ads =nm,  no\:me: neymar, age: 30, daojmskdpoa and a  height:   175, school: lupe\ picasso, team: psg,)",
                 {
-                        {R"(no:me)", "neymar"},
-                        {"age", "30"},
-                        {"height", "175"},
-                        {"school", "lupe picasso"},
-                        {"team", "psg"}
+                    {R"(no:me)", "neymar"},
+                    {"age", "30"},
+                    {"height", "175"},
+                    {"school", "lupe picasso"},
+                    {"team", "psg"}
                 }
-        })
+            },
+            {
+                "XNFHGSSF_RHRUZHVBS_KWBT: F,",
+                {
+                    {"XNFHGSSF_RHRUZHVBS_KWBT", "F"}
+                }
+            },
+        }
+        )
 );
 
 INSTANTIATE_TEST_SUITE_P(
         Escaping,
         LazyEscapingKeyValuePairExtractorTest,
         ::testing::ValuesIn(std::initializer_list<LazyEscapingKeyValuePairExtractorTestCase> {
-                {
-                        "na,me,: neymar, age:30",
-                        {
-                                {"age", "30"}
-                        }
-                },
-                {
-                        "na$me,: neymar, age:30",
-                        {
-                                {"age", "30"}
-                        }
-                },
-                {
-                        R"(name: neymar, favorite_quote: Premature optimization is the r\$\$t of all evil, age:30)",
-                        {
-                                {"name", "neymar"},
-                                {"favorite_quote", R"(Premature optimization is the r$$t of all evil)"},
-                                {"age", "30"}
-                        },
-                        ',',
-                        ':',
-                        '\\',
-                        '"'
-                }
+            {
+                    "na,me,: neymar, age:30",
+                    {
+                            {"age", "30"}
+                    }
+            },
+            {
+                    "na$me,: neymar, age:30",
+                    {
+                            {"age", "30"}
+                    }
+            },
+            {
+                    R"(name: neymar, favorite_quote: Premature\ optimization\ is\ the\ r\$\$t\ of\ all\ evil, age:30)",
+                    {
+                            {"name", "neymar"},
+                            {"favorite_quote", R"(Premature optimization is the r$$t of all evil)"},
+                            {"age", "30"}
+                    },
+                    ',',
+                    ':',
+                    '\\',
+                    '"'
+            }
         })
 );
 
