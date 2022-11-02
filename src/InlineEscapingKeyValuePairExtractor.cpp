@@ -40,24 +40,18 @@ KeyValuePairExtractor::NextState InlineEscapingKeyValuePairExtractor::readKey(co
 }
 
 KeyValuePairExtractor::NextState InlineEscapingKeyValuePairExtractor::readEnclosedKey(const std::string &file, size_t pos) {
-    bool escape = false;
     key.clear();
 
     while (pos < file.size()) {
         const auto current_character = file[pos++];
-        if (escape) {
-            escape = false;
-            key.push_back(current_character);
-        } else if (enclosing_character == current_character) {
+        if (enclosing_character == current_character) {
             return {
                 pos,
                 State::READING_KV_DELIMITER
             };
-        } else if (escape_character == current_character) {
-            escape = true;
-        } else {
-            key.push_back(current_character);
         }
+
+        key.push_back(current_character);
     }
 
     return {
@@ -75,14 +69,9 @@ KeyValuePairExtractor::NextState InlineEscapingKeyValuePairExtractor::readValue(
         if (escape) {
             escape = false;
             value.push_back(current_character);
-        } else if (enclosing_character && enclosing_character == current_character) {
-            return {
-                pos,
-                State::READING_ENCLOSED_VALUE
-            };
         } else if (escape_character == current_character) {
             escape = true;
-        } else if (current_character == item_delimiter) {
+        } else if (current_character == item_delimiter || (!std::isalnum(current_character) && current_character != '_')) {
             return {
                 pos,
                 State::FLUSH_PAIR
@@ -100,23 +89,16 @@ KeyValuePairExtractor::NextState InlineEscapingKeyValuePairExtractor::readValue(
 }
 
 KeyValuePairExtractor::NextState InlineEscapingKeyValuePairExtractor::readEnclosedValue(const std::string &file, size_t pos) {
-    bool escape = false;
 
     while (pos < file.size()) {
         const auto current_character = file[pos++];
-        if (escape) {
-            escape = false;
-            value.push_back(current_character);
-        } else if (enclosing_character == current_character) {
+        if (enclosing_character == current_character) {
             return {
                 pos,
                 State::FLUSH_PAIR
             };
-        } else if (escape_character == current_character) {
-            escape = true;
-        } else {
-            value.push_back(current_character);
         }
+        value.push_back(current_character);
     }
 
     return {
