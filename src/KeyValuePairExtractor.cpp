@@ -1,13 +1,13 @@
-#include "FSMKeyValuePairFileProcessor.h"
+#include "KeyValuePairExtractor.h"
 
 #include <optional>
 
-FSMKeyValuePairFileProcessor::FSMKeyValuePairFileProcessor(char item_delimiter, char key_value_delimiter, char escape_character, std::optional<char> enclosing_character)
+KeyValuePairExtractor::KeyValuePairExtractor(char item_delimiter, char key_value_delimiter, char escape_character, std::optional<char> enclosing_character)
         : item_delimiter(item_delimiter), key_value_delimiter(key_value_delimiter), escape_character(escape_character), enclosing_character(enclosing_character) {
 
 }
 
-std::map<std::string, std::string> FSMKeyValuePairFileProcessor::process(const std::string & file) const {
+std::map<std::string, std::string> KeyValuePairExtractor::extract(const std::string & file) const {
 
     auto state = State::WAITING_KEY;
 
@@ -19,7 +19,7 @@ std::map<std::string, std::string> FSMKeyValuePairFileProcessor::process(const s
     std::string value;
 
     while (state != State::END) {
-        auto nextState = process(file, pos, state, key, value, response);
+        auto nextState = extract(file, pos, state, key, value, response);
 
         pos = nextState.pos;
         state = nextState.state;
@@ -28,10 +28,10 @@ std::map<std::string, std::string> FSMKeyValuePairFileProcessor::process(const s
     return response;
 }
 
-FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::process(const std::string & file, std::size_t pos,
-                                                                              FSMKeyValuePairFileProcessor::State state,
-                                                                              std::string &key, std::string &value,
-                                                                              std::map<std::string, std::string> &response) const {
+KeyValuePairExtractor::NextState KeyValuePairExtractor::extract(const std::string & file, std::size_t pos,
+                                                                KeyValuePairExtractor::State state,
+                                                                std::string &key, std::string &value,
+                                                                std::map<std::string, std::string> &response) const {
     switch (state) {
         case State::WAITING_KEY:
             return waitKey(file, pos);
@@ -62,7 +62,7 @@ FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::process(co
 }
 
 
-FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::waitKey(const std::string & file, size_t pos) const {
+KeyValuePairExtractor::NextState KeyValuePairExtractor::waitKey(const std::string & file, size_t pos) const {
 
     while (pos < file.size()) {
         const auto current_character = file[pos];
@@ -87,7 +87,7 @@ FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::waitKey(co
     };
 }
 
-FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::readKey(const std::string &file, size_t pos, std::string &key) const {
+KeyValuePairExtractor::NextState KeyValuePairExtractor::readKey(const std::string &file, size_t pos, std::string &key) const {
     bool escape = false;
 
     while (pos < file.size()) {
@@ -118,7 +118,7 @@ FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::readKey(co
     };
 }
 
-FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::readEnclosedKey(const std::string &file, size_t pos, std::string &key) const {
+KeyValuePairExtractor::NextState KeyValuePairExtractor::readEnclosedKey(const std::string &file, size_t pos, std::string &key) const {
     bool escape = false;
 
     while (pos < file.size()) {
@@ -144,7 +144,7 @@ FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::readEnclos
     };
 }
 
-FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::readKeyValueDelimiter(const std::string &file, size_t pos) const {
+KeyValuePairExtractor::NextState KeyValuePairExtractor::readKeyValueDelimiter(const std::string &file, size_t pos) const {
 
     if (pos == file.size()) {
         return {
@@ -160,7 +160,7 @@ FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::readKeyVal
     }
 }
 
-FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::waitValue(const std::string &file, size_t pos) const {
+KeyValuePairExtractor::NextState KeyValuePairExtractor::waitValue(const std::string &file, size_t pos) const {
 
     while (pos < file.size()) {
         const auto current_character = file[pos];
@@ -177,7 +177,7 @@ FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::waitValue(
     };
 }
 
-FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::readValue(const std::string &file, size_t pos, std::string &value) const {
+KeyValuePairExtractor::NextState KeyValuePairExtractor::readValue(const std::string &file, size_t pos, std::string &value) const {
     bool escape = false;
 
     while (pos < file.size()) {
@@ -209,7 +209,7 @@ FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::readValue(
     };
 }
 
-FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::readEnclosedValue(const std::string &file, size_t pos, std::string &value) const {
+KeyValuePairExtractor::NextState KeyValuePairExtractor::readEnclosedValue(const std::string &file, size_t pos, std::string &value) const {
     bool escape = false;
 
     while (pos < file.size()) {
@@ -235,7 +235,7 @@ FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::readEnclos
     };
 }
 
-FSMKeyValuePairFileProcessor::NextState FSMKeyValuePairFileProcessor::flushPair(
+KeyValuePairExtractor::NextState KeyValuePairExtractor::flushPair(
         const std::string &file,
         std::size_t pos,
         std::string &key,

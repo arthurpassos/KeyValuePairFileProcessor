@@ -3,9 +3,9 @@
 #include <gtest/gtest.h>
 #include <nlohmann/json.hpp>
 
-#include "FSMKeyValuePairFileProcessor.h"
+#include "KeyValuePairExtractor.h"
 
-struct FSMKeyValuePairFileProcessorTestCase {
+struct KeyValuePairExtractorTestCase {
     std::string input;
     std::map<std::string, std::string> expected_output;
     char item_delimiter = ',';
@@ -14,29 +14,29 @@ struct FSMKeyValuePairFileProcessorTestCase {
     std::optional<char> enclosing_character;
 };
 
-std::ostream & operator<<(std::ostream & ostr, const FSMKeyValuePairFileProcessorTestCase & test_case)
+std::ostream & operator<<(std::ostream & ostr, const KeyValuePairExtractorTestCase & test_case)
 {
     return ostr << test_case.input;
 }
 
-class FSMKeyValuePairFileProcessorTest : public ::testing::TestWithParam<FSMKeyValuePairFileProcessorTestCase> {
+class KeyValuePairExtractorTest : public ::testing::TestWithParam<KeyValuePairExtractorTestCase> {
 
 };
 
-TEST_P(FSMKeyValuePairFileProcessorTest, DefaultSpecialCharacters) {
+TEST_P(KeyValuePairExtractorTest, DefaultSpecialCharacters) {
     const auto & [input, expected_output, item_delimiter, key_value_delimiter, escape_character, enclosing_character] = GetParam();
 
-    FSMKeyValuePairFileProcessor processor(item_delimiter, key_value_delimiter, escape_character, enclosing_character);
+    KeyValuePairExtractor processor(item_delimiter, key_value_delimiter, escape_character, enclosing_character);
 
-    auto result = processor.process(input);
+    auto result = processor.extract(input);
 
     EXPECT_EQ(result, expected_output);
 }
 
 INSTANTIATE_TEST_CASE_P(
     ValuesCanBeEmptyString,
-    FSMKeyValuePairFileProcessorTest,
-    ::testing::ValuesIn(std::initializer_list<FSMKeyValuePairFileProcessorTestCase> {
+    KeyValuePairExtractorTest,
+    ::testing::ValuesIn(std::initializer_list<KeyValuePairExtractorTestCase> {
         {
             "age:",
             {
@@ -56,8 +56,8 @@ INSTANTIATE_TEST_CASE_P(
 
 INSTANTIATE_TEST_CASE_P(
     MixString,
-    FSMKeyValuePairFileProcessorTest,
-    ::testing::ValuesIn(std::initializer_list<FSMKeyValuePairFileProcessorTestCase> {
+    KeyValuePairExtractorTest,
+    ::testing::ValuesIn(std::initializer_list<KeyValuePairExtractorTestCase> {
         R"(9 ads =nm,  no\:me: neymar, age: 30, daojmskdpoa and a  height:   175, school: lupe picasso, team: psg,)",
         {
             {R"(no:me)", "neymar"},
@@ -71,8 +71,8 @@ INSTANTIATE_TEST_CASE_P(
 
 INSTANTIATE_TEST_CASE_P(
     Escaping,
-    FSMKeyValuePairFileProcessorTest,
-    ::testing::ValuesIn(std::initializer_list<FSMKeyValuePairFileProcessorTestCase> {
+    KeyValuePairExtractorTest,
+    ::testing::ValuesIn(std::initializer_list<KeyValuePairExtractorTestCase> {
         {
             "na,me,: neymar, age:30",
              {
@@ -100,7 +100,7 @@ INSTANTIATE_TEST_CASE_P(
     })
 );
 
-TEST(FSMKeyValuePairFileProcessorTests, MixString2) {
+TEST(KeyValuePairExtractorTests, MixString2) {
     std::string long_string = R"(2582511992885811767 Qfic=QELUWB, BciBbb=9, IeyClzKmrs {Pvkrq=86093, Glhbmwg=5, FtuzyjOsf=66, YssMbiUswk=0, AxuDcgzkpx=1, KacsIbu=277, MgmjkhKh=9q60pqp43s246u2745, KucFjl=61350852, SdfbJshj=5462619308589345326}, UzfFmg {IsaRubn=3, PqgPmah=954, JagRddm=31692}, KnxKigysBjo {Mnfmybl=7941, Vnvpht=xghk, BgqvTj=9843, UlnrrCr=72940085719217638, YawhzZkqv=260753, QyxbSqamh=627.4022, Ulejhjgk=-0, DjyecbleCqazeZdyc=2229740235971220001, YocxsggkXvxwWzgd=2320663994026035210, NhntkbcQzghj=6}, Rdodi {OSERVWEI_MIVZAPPDLCR_JT="068G14THM", KFQMUR_HXEVFA="XZSQ", DVCRIJ_ZOUMQ_DD="P0889542750958729205", XNFHGSSF_RHRUZHVBS_KWBT="F", DIOQZO_PVNNTGISHEH_VB="bmhncvchhrepqnxb", BHMYYKME_VCPWN_QR=754501869725462264, SYZIWCHJK=2z1791877467804982}, Zfv {AyvbOrexdlUdzj="GESF", FescvXwmfFlgijw="RPUGI|RULHKBESCT", RvnzbdkCwjt="3087"}, UetXuhy {R_YU_FVBD_TCGUTEDZU_BBVAK=0422461531412992163, G_OV_WBLZ_WMMJKMHQZ=5216958198816473961, B_REU_XUQXBYR_LVOIMULK_MMSN=IcmniychTgxn{unsaurbrLnaqQc=1, fbqiUtcjYul=20911}}, AuorsGvyImnh {P_EWJN="JFVL"})";
 
     using json = nlohmann::json;
@@ -116,9 +116,9 @@ TEST(FSMKeyValuePairFileProcessorTests, MixString2) {
 
     auto expected_output = data.get<std::map<std::string, std::string>>();
 
-    FSMKeyValuePairFileProcessor processor(',', '=', '\\', '\"');
+    KeyValuePairExtractor processor(',', '=', '\\', '\"');
 
-    auto result = processor.process(long_string);
+    auto result = processor.extract(long_string);
 
 //    for (const auto & pair : result)
 //        std::cout<<pair.first<<": "<<pair.second<<", ";
