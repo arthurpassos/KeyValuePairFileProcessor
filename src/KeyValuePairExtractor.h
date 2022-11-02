@@ -6,7 +6,7 @@
 #include <functional>
 
 class KeyValuePairExtractor {
-
+protected:
     static constexpr char SPACE_CHARACTER = ' ';
     enum State {
         WAITING_KEY,
@@ -16,6 +16,7 @@ class KeyValuePairExtractor {
         WAITING_VALUE,
         READING_VALUE,
         READING_ENCLOSED_VALUE,
+        READING_EMPTY_VALUE,
         FLUSH_PAIR,
         END
     };
@@ -26,30 +27,31 @@ class KeyValuePairExtractor {
     };
 
 public:
+    using Response = std::unordered_map<std::string, std::string>;
+
     KeyValuePairExtractor(char item_delimiter, char key_value_delimiter, char escape_character, std::optional<char> enclosing_character);
 
-    [[nodiscard]] std::map<std::string, std::string> extract(const std::string & file) const;
+    [[nodiscard]] Response extract(const std::string & file);
 
-private:
+protected:
     char item_delimiter;
     char key_value_delimiter;
     char escape_character;
     std::optional<char> enclosing_character;
 
-    KeyValuePairExtractor::NextState waitKey(const std::string &file, size_t pos) const;
-    KeyValuePairExtractor::NextState readKey(const std::string &file, size_t pos, std::string &key) const;
-    KeyValuePairExtractor::NextState readEnclosedKey(const std::string &file, size_t pos, std::string &key) const;
-    KeyValuePairExtractor::NextState readKeyValueDelimiter(const std::string &file, size_t pos) const;
-    KeyValuePairExtractor::NextState waitValue(const std::string &file, size_t pos) const;
-    KeyValuePairExtractor::NextState readValue(const std::string &file, size_t pos, std::string &value) const;
-    KeyValuePairExtractor::NextState
-    readEnclosedValue(const std::string &file, size_t pos, std::string &value) const;
-    KeyValuePairExtractor::NextState
-    flushPair(const std::string &file, std::size_t pos, std::string &key, std::string &value,
-              std::map<std::string, std::string> &response) const;
+    KeyValuePairExtractor::NextState waitKey(const std::string & file, size_t pos) const;
+    virtual KeyValuePairExtractor::NextState readKey(const std::string & file, size_t pos) = 0;
+    virtual KeyValuePairExtractor::NextState readEnclosedKey(const std::string  &file, size_t pos) = 0;
+    KeyValuePairExtractor::NextState readKeyValueDelimiter(const std::string & file, size_t pos) const;
+    KeyValuePairExtractor::NextState waitValue(const std::string & file, size_t pos) const;
+    virtual KeyValuePairExtractor::NextState readValue(const std::string & file, size_t pos) = 0;
+    virtual KeyValuePairExtractor::NextState readEnclosedValue(const std::string & file, size_t pos) = 0;
+    virtual KeyValuePairExtractor::NextState readEmptyValue(const std::string & file, size_t pos) = 0;
+    virtual KeyValuePairExtractor::NextState flushPair(const std::string & file, std::size_t pos) = 0;
 
-    NextState extract(
-            const std::string & file, std::size_t pos,
-            State state, std::string & key, std::string & value, std::map<std::string, std::string> & response) const;
+    virtual Response get() const = 0;
+
+
+    NextState extract(const std::string & file, std::size_t pos, State state);
 
 };
