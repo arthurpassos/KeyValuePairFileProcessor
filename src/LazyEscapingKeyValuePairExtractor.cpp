@@ -147,6 +147,8 @@ KeyValuePairExtractor::Response LazyEscapingKeyValuePairExtractor::get() const {
         bool escape = false;
         std::string element;
 
+        element.reserve(element_view.size());
+
         for (char character : element_view) {
             if (escape) {
                 escape = false;
