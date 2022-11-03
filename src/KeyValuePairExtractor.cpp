@@ -102,7 +102,7 @@ KeyValuePairExtractor::NextState KeyValuePairExtractor::waitValue(const std::str
 
         if (current_character == enclosing_character) {
             return {
-                pos,
+                pos + 1u,
                 State::READING_ENCLOSED_VALUE
             };
         } else if (current_character == item_delimiter) {
