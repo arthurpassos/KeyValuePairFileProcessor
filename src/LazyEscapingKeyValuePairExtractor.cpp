@@ -1,13 +1,13 @@
 #include "LazyEscapingKeyValuePairExtractor.h"
 
-LazyEscapingKeyValuePairExtractor::LazyEscapingKeyValuePairExtractor(char item_delimiter, char key_value_delimiter,
+LazyEscapingKeyValuePairExtractorTests::LazyEscapingKeyValuePairExtractorTests(char item_delimiter, char key_value_delimiter,
                                                                      char escape_character,
                                                                      std::optional<char> enclosing_character)
         : KeyValuePairExtractor(item_delimiter, key_value_delimiter, escape_character, enclosing_character) {
 
 }
 
-KeyValuePairExtractor::NextState LazyEscapingKeyValuePairExtractor::readKey(const std::string & file, size_t pos) {
+KeyValuePairExtractor::NextState LazyEscapingKeyValuePairExtractorTests::readKey(const std::string & file, size_t pos) {
     bool escape = false;
 
     auto start_index = pos;
@@ -40,7 +40,7 @@ KeyValuePairExtractor::NextState LazyEscapingKeyValuePairExtractor::readKey(cons
     };
 }
 
-KeyValuePairExtractor::NextState LazyEscapingKeyValuePairExtractor::readEnclosedKey(const std::string &file, size_t pos) {
+KeyValuePairExtractor::NextState LazyEscapingKeyValuePairExtractorTests::readEnclosedKey(const std::string &file, size_t pos) {
     auto start_index = pos;
 
     while (pos < file.size()) {
@@ -70,7 +70,7 @@ KeyValuePairExtractor::NextState LazyEscapingKeyValuePairExtractor::readEnclosed
     };
 }
 
-KeyValuePairExtractor::NextState LazyEscapingKeyValuePairExtractor::readValue(const std::string &file, size_t pos) {
+KeyValuePairExtractor::NextState LazyEscapingKeyValuePairExtractorTests::readValue(const std::string &file, size_t pos) {
     bool escape = false;
 
     auto start_index = pos;
@@ -99,7 +99,7 @@ KeyValuePairExtractor::NextState LazyEscapingKeyValuePairExtractor::readValue(co
     };
 }
 
-KeyValuePairExtractor::NextState LazyEscapingKeyValuePairExtractor::readEnclosedValue(const std::string &file, size_t pos) {
+KeyValuePairExtractor::NextState LazyEscapingKeyValuePairExtractorTests::readEnclosedValue(const std::string &file, size_t pos) {
     auto start_index = pos;
 
     while (pos < file.size()) {
@@ -121,7 +121,7 @@ KeyValuePairExtractor::NextState LazyEscapingKeyValuePairExtractor::readEnclosed
     };
 }
 
-KeyValuePairExtractor::NextState LazyEscapingKeyValuePairExtractor::readEmptyValue(const std::string &file, size_t pos) {
+KeyValuePairExtractor::NextState LazyEscapingKeyValuePairExtractorTests::readEmptyValue(const std::string &file, size_t pos) {
     value = std::string_view();
     return {
         pos + 1,
@@ -129,7 +129,7 @@ KeyValuePairExtractor::NextState LazyEscapingKeyValuePairExtractor::readEmptyVal
     };
 }
 
-KeyValuePairExtractor::NextState LazyEscapingKeyValuePairExtractor::flushPair(const std::string &file, std::size_t pos) {
+KeyValuePairExtractor::NextState LazyEscapingKeyValuePairExtractorTests::flushPair(const std::string &file, std::size_t pos) {
     response_views[key] = value;
 
     return {
@@ -138,11 +138,11 @@ KeyValuePairExtractor::NextState LazyEscapingKeyValuePairExtractor::flushPair(co
     };
 }
 
-std::string_view LazyEscapingKeyValuePairExtractor::createElement(const std::string & file, std::size_t being, std::size_t end) {
+std::string_view LazyEscapingKeyValuePairExtractorTests::createElement(const std::string & file, std::size_t being, std::size_t end) {
     return std::string_view {file.begin() + being, file.begin() + end};
 }
 
-KeyValuePairExtractor::Response LazyEscapingKeyValuePairExtractor::get() const {
+KeyValuePairExtractor::Response LazyEscapingKeyValuePairExtractorTests::get() const {
     auto unescape = [&](std::string_view element_view) {
         bool escape = false;
         std::string element;
@@ -166,7 +166,6 @@ KeyValuePairExtractor::Response LazyEscapingKeyValuePairExtractor::get() const {
     Response response;
 
     for (auto [key_view, value_view] : response_views) {
-        // need to check if RVO applies here or if I'll have to move
         response[unescape(key_view)] = unescape(value_view);
     }
 

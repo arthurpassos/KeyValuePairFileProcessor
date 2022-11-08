@@ -3,9 +3,9 @@
 #include <string_view>
 #include "KeyValuePairExtractor.h"
 
-class LazyEscapingKeyValuePairExtractor : public KeyValuePairExtractor {
+class LazyEscapingKeyValuePairExtractorTests : public KeyValuePairExtractor {
 public:
-    LazyEscapingKeyValuePairExtractor(char item_delimiter, char key_value_delimiter, char escape_character, std::optional<char> enclosing_character);
+    LazyEscapingKeyValuePairExtractorTests(char item_delimiter, char key_value_delimiter, char escape_character, std::optional<char> enclosing_character);
 
 private:
     std::string_view key;

@@ -115,3 +115,27 @@ TEST(InlineEscapingKeyValuePairExtractorTests, MixString2) {
 
     EXPECT_EQ(result, expected_output);
 }
+
+TEST(InlineEscapingKeyValuePairExtractorTests, MixString3) {
+
+    std::ifstream input_file("/home/arthur/CLionProjects/key_value_pair_processing/tests/big_input_file.txt");
+
+    std::ostringstream ss;
+    ss << input_file.rdbuf();
+
+    std::string input_string = ss.str();
+
+    using json = nlohmann::json;
+
+    std::ifstream expected_output_file("/home/arthur/CLionProjects/key_value_pair_processing/tests/big_output_file.json");
+
+    json expected_output_json = json::parse(expected_output_file);
+
+    auto expected_output = expected_output_json.get<std::unordered_map<std::string, std::string>>();
+
+    InlineEscapingKeyValuePairExtractor processor(',', ':', '\\', '\"');
+
+    auto result = processor.extract(input_string);
+
+    EXPECT_EQ(result, expected_output);
+}

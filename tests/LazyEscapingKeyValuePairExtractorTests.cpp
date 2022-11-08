@@ -12,10 +12,10 @@ struct LazyEscapingKeyValuePairExtractorTest : public ::testing::TestWithParam<L
 
 };;
 
-TEST_P(LazyEscapingKeyValuePairExtractorTest, LazyEscapingKeyValuePairExtractor) {
+TEST_P(LazyEscapingKeyValuePairExtractorTest, LazyEscapingKeyValuePairExtractorTests) {
     const auto & [input, expected_output, item_delimiter, key_value_delimiter, escape_character, enclosing_character] = GetParam();
 
-    LazyEscapingKeyValuePairExtractor processor(item_delimiter, key_value_delimiter, escape_character, enclosing_character);
+    LazyEscapingKeyValuePairExtractorTests processor(item_delimiter, key_value_delimiter, escape_character, enclosing_character);
 
     auto result = processor.extract(input);
 
@@ -135,7 +135,31 @@ TEST(LazyEscapingKeyValuePairExtractorTests, MixString2) {
 
     auto expected_output = expected_output_json.get<std::unordered_map<std::string, std::string>>();
 
-    LazyEscapingKeyValuePairExtractor processor(',', '=', '\\', '\"');
+    LazyEscapingKeyValuePairExtractorTests processor(',', '=', '\\', '\"');
+
+    auto result = processor.extract(input_string);
+
+    EXPECT_EQ(result, expected_output);
+}
+
+TEST(LazyEscapingKeyValuePairExtractorTests, MixString3) {
+
+    std::ifstream input_file("/home/arthur/CLionProjects/key_value_pair_processing/tests/big_input_file.txt");
+
+    std::ostringstream ss;
+    ss << input_file.rdbuf();
+
+    std::string input_string = ss.str();
+
+    using json = nlohmann::json;
+
+    std::ifstream expected_output_file("/home/arthur/CLionProjects/key_value_pair_processing/tests/big_output_file.json");
+
+    json expected_output_json = json::parse(expected_output_file);
+
+    auto expected_output = expected_output_json.get<std::unordered_map<std::string, std::string>>();
+
+    LazyEscapingKeyValuePairExtractorTests processor(',', ':', '\\', '\"');
 
     auto result = processor.extract(input_string);
 

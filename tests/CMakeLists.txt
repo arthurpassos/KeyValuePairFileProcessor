@@ -13,7 +13,7 @@ enable_testing()
 
 find_package(nlohmann_json 3.2.0 REQUIRED)
 
-add_executable(key_value_pair_processing_tests_fsm InlineEscapingKeyValuePairExtractorTests.cpp LazyEscapingKeyValuePairExtractor.cpp KeyValuePairExtractorTest.h KeyValuePairExtractorTest.cpp)
+add_executable(key_value_pair_processing_tests_fsm InlineEscapingKeyValuePairExtractorTests.cpp LazyEscapingKeyValuePairExtractorTests.cpp KeyValuePairExtractorTest.h KeyValuePairExtractorTest.cpp)
 
 target_link_libraries(key_value_pair_processing_tests_fsm GTest::gtest_main key_value_pair_processing_lib nlohmann_json::nlohmann_json)
 
