@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15...3.23)
-project(key_value_pair_processing)
+project(KeyValuePairExtractor)
 
 set(CMAKE_CXX_STANDARD 23)
 
