@@ -10,6 +10,14 @@
 #include "KeyStateHandler.h"
 #include "ValueStateHandler.h"
 
+/*
+ * Implements key value pair extraction by ignoring escaping and deferring its processing to the end.
+ * This strategy allows more efficient memory usage in case of very noisy files because it does not have to
+ * store characters while reading an element. Because of that, std::string_views can be used to store key value pairs.
+ *
+ * In the end, the unescaped key value pair views are converted into escaped key value pairs. At this stage, memory is allocated
+ * to store characters, but noise is no longer an issue.
+ * */
 class LazyEscapingKeyValuePairExtractor : public KeyValuePairExtractor {
 public:
     LazyEscapingKeyValuePairExtractor(char item_delimiter, char key_value_delimiter, char escape_character, std::optional<char> enclosing_character);
