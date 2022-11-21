@@ -2,7 +2,7 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 
-#include "LazyEscapingKeyValuePairExtractor.h"
+#include "impl/LazyEscapingKeyValuePairExtractor.h"
 
 struct LazyKeyValuePairExtractorTestCase {
     std::string input;
@@ -152,7 +152,7 @@ TEST(KeyValuePairExtractorTests, MixString2) {
     EXPECT_EQ(result, expected_output);
 }
 
-TEST(KeyValuePairExtractorTests, MixString3) {
+TEST(DISABLED_KeyValuePairExtractorTests, MixString3) {
 
     std::ifstream input_file("/home/arthur/CLionProjects/KeyValuePairExtractor/tests/big_input_file.txt");
 
