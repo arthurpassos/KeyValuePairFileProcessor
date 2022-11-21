@@ -7,6 +7,8 @@ KeyValuePairEscapingProcessor::KeyValuePairEscapingProcessor(char escape_charact
 KeyValuePairEscapingProcessor::Response KeyValuePairEscapingProcessor::process(const ResponseViews & response_views) const {
     Response response;
 
+    response.reserve(response_views.size());
+
     for (auto [key_view, value_view] : response_views) {
         response[escape(key_view)] = escape(value_view);
     }

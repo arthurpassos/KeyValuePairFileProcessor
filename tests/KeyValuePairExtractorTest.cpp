@@ -174,7 +174,7 @@ TEST(KeyValuePairExtractorTests, MixString3) {
 
     auto expected_output = expected_output_json.get<std::unordered_map<std::string, std::string>>();
 
-    auto processor = KeyValuePairExtractorBuilder().build();
+    auto processor = KeyValuePairExtractorBuilder().withEnclosingCharacter('"').build();
 
     auto result = processor->extract(input_string);
 

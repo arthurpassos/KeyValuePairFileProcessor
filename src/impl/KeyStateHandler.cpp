@@ -8,7 +8,7 @@ KeyStateHandler::KeyStateHandler(char key_value_delimiter, char escape_character
 NextState KeyStateHandler::waitKey(const std::string &file, size_t pos) const {
     while (pos < file.size()) {
         const auto current_character = file[pos];
-        if (isalpha(current_character) || current_character == '_') {
+        if (isalpha(current_character)) {
             return {
                     pos,
                     State::READING_KEY
