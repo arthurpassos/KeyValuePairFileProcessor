@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 #include <nlohmann/json.hpp>
 #include <fstream>
+#include "KeyValuePairExtractorBuilder.h"
 
-#include "impl/LazyEscapingKeyValuePairExtractor.h"
 
 struct LazyKeyValuePairExtractorTestCase {
     std::string input;
@@ -25,9 +25,14 @@ struct KeyValuePairExtractorTest : public ::testing::TestWithParam<LazyKeyValueP
 TEST_P(KeyValuePairExtractorTest, KeyValuePairExtractorTests) {
     const auto & [input, expected_output, item_delimiter, key_value_delimiter, escape_character, enclosing_character] = GetParam();
 
-    LazyEscapingKeyValuePairExtractor processor(item_delimiter, key_value_delimiter, escape_character, enclosing_character);
+    auto processor = KeyValuePairExtractorBuilder()
+                    .withEnclosingCharacter(enclosing_character)
+                    .withEscapeCharacter(escape_character)
+                    .withItemDelimiter(item_delimiter)
+                    .withKeyValuePairDelimiter(key_value_delimiter)
+                    .build();
 
-    auto result = processor.extract(input);
+    auto result = processor->extract(input);
 
     EXPECT_EQ(result, expected_output);
 }
@@ -145,9 +150,9 @@ TEST(KeyValuePairExtractorTests, MixString2) {
 
     auto expected_output = expected_output_json.get<std::unordered_map<std::string, std::string>>();
 
-    LazyEscapingKeyValuePairExtractor processor(',', '=', '\\', '\"');
+    auto processor = KeyValuePairExtractorBuilder().withKeyValuePairDelimiter('=').build();
 
-    auto result = processor.extract(input_string);
+    auto result = processor->extract(input_string);
 
     EXPECT_EQ(result, expected_output);
 }
@@ -169,9 +174,9 @@ TEST(DISABLED_KeyValuePairExtractorTests, MixString3) {
 
     auto expected_output = expected_output_json.get<std::unordered_map<std::string, std::string>>();
 
-    LazyEscapingKeyValuePairExtractor processor(',', ':', '\\', '\"');
+    auto processor = KeyValuePairExtractorBuilder().build();
 
-    auto result = processor.extract(input_string);
+    auto result = processor->extract(input_string);
 
     EXPECT_EQ(result, expected_output);
 }
