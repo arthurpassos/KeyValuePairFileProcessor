@@ -157,7 +157,7 @@ TEST(KeyValuePairExtractorTests, MixString2) {
     EXPECT_EQ(result, expected_output);
 }
 
-TEST(DISABLED_KeyValuePairExtractorTests, MixString3) {
+TEST(KeyValuePairExtractorTests, MixString3) {
 
     std::ifstream input_file("/home/arthur/CLionProjects/KeyValuePairExtractor/tests/big_input_file.txt");
 
