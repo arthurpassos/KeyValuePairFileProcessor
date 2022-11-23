@@ -22,5 +22,9 @@ KeyValuePairExtractorBuilder & KeyValuePairExtractorBuilder::withEnclosingCharac
 }
 
 std::shared_ptr<KeyValuePairExtractor> KeyValuePairExtractorBuilder::build() {
-    return std::make_shared<LazyEscapingKeyValuePairExtractor>(item_delimiter, key_value_pair_delimiter, escape_character, enclosing_character);
+    KeyStateHandler keyStateHandler(key_value_pair_delimiter, escape_character, enclosing_character);
+    ValueStateHandler valueStateHandler(escape_character, item_delimiter, enclosing_character);
+    KeyValuePairEscapingProcessor escapingProcessor(escape_character);
+
+    return std::make_shared<LazyEscapingKeyValuePairExtractor>(keyStateHandler, valueStateHandler, escapingProcessor);
 }

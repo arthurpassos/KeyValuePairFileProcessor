@@ -4,11 +4,13 @@
 #include <string>
 #include <optional>
 #include <functional>
+#include <unordered_set>
 
 #include "KeyValuePairExtractor.h"
 #include "State.h"
 #include "KeyStateHandler.h"
 #include "ValueStateHandler.h"
+#include "KeyValuePairEscapingProcessor.h"
 
 /*
  * Implements key value pair extraction by ignoring escaping and deferring its processing to the end.
@@ -20,7 +22,7 @@
  * */
 class LazyEscapingKeyValuePairExtractor : public KeyValuePairExtractor {
 public:
-    LazyEscapingKeyValuePairExtractor(char item_delimiter, char key_value_delimiter, char escape_character, std::optional<char> enclosing_character);
+    LazyEscapingKeyValuePairExtractor(KeyStateHandler keyStateHandler, ValueStateHandler valueStateHandler, KeyValuePairEscapingProcessor keyValuePairEscapingProcessor);
 
     [[nodiscard]] Response extract(const std::string & file) override;
 
@@ -39,10 +41,9 @@ private:
 
     NextState flushPair(const std::string & file, std::size_t pos);
 
-    char escape_character;
-
     KeyStateHandler keyStateHandler;
     ValueStateHandler valueStateHandler;
+    KeyValuePairEscapingProcessor escapingProcessor;
 
     std::string_view key;
     std::string_view value;

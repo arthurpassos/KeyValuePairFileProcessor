@@ -3,9 +3,10 @@
 
 #include <optional>
 
-LazyEscapingKeyValuePairExtractor::LazyEscapingKeyValuePairExtractor(char item_delimiter, char key_value_delimiter, char escape_character, std::optional<char> enclosing_character)
-    : escape_character(escape_character), keyStateHandler(key_value_delimiter, escape_character, enclosing_character),
-    valueStateHandler(escape_character, item_delimiter, enclosing_character)
+LazyEscapingKeyValuePairExtractor::LazyEscapingKeyValuePairExtractor(KeyStateHandler keyStateHandler_,
+                                                                     ValueStateHandler valueStateHandler_,
+                                                                     KeyValuePairEscapingProcessor escapingProcessor_)
+ : keyStateHandler(keyStateHandler_), valueStateHandler(valueStateHandler_), escapingProcessor(escapingProcessor_)
 {}
 
 LazyEscapingKeyValuePairExtractor::Response LazyEscapingKeyValuePairExtractor::extract(const std::string & file) {
@@ -20,8 +21,6 @@ LazyEscapingKeyValuePairExtractor::Response LazyEscapingKeyValuePairExtractor::e
         pos = nextState.pos;
         state = nextState.state;
     }
-
-    KeyValuePairEscapingProcessor escapingProcessor(escape_character);
 
     return escapingProcessor.process(response_views);
 }
@@ -53,7 +52,6 @@ NextState LazyEscapingKeyValuePairExtractor::extract(const std::string & file, s
             };
     }
 }
-
 
 NextState LazyEscapingKeyValuePairExtractor::waitKey(const std::string & file, size_t pos) const {
     return keyStateHandler.wait(file, pos);
