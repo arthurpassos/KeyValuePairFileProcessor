@@ -7,10 +7,7 @@
 struct LazyKeyValuePairExtractorTestCase {
     std::string input;
     std::unordered_map<std::string, std::string> expected_output;
-    char item_delimiter = ',';
-    char key_value_delimiter = ':';
-    char escape_character = '\\';
-    std::optional<char> enclosing_character;
+    std::shared_ptr<KeyValuePairExtractor> extractor;
 };
 
 std::ostream & operator<<(std::ostream & ostr, const LazyKeyValuePairExtractorTestCase & test_case)
@@ -20,19 +17,12 @@ std::ostream & operator<<(std::ostream & ostr, const LazyKeyValuePairExtractorTe
 
 struct KeyValuePairExtractorTest : public ::testing::TestWithParam<LazyKeyValuePairExtractorTestCase> {
 
-};;
+};
 
 TEST_P(KeyValuePairExtractorTest, KeyValuePairExtractorTests) {
-    const auto & [input, expected_output, item_delimiter, key_value_delimiter, escape_character, enclosing_character] = GetParam();
+    const auto & [input, expected_output, extractor] = GetParam();
 
-    auto processor = KeyValuePairExtractorBuilder()
-                    .withEnclosingCharacter(enclosing_character)
-                    .withEscapeCharacter(escape_character)
-                    .withItemDelimiter(item_delimiter)
-                    .withKeyValuePairDelimiter(key_value_delimiter)
-                    .build();
-
-    auto result = processor->extract(input);
+    auto result = extractor->extract(input);
 
     EXPECT_EQ(result, expected_output);
 }
@@ -46,6 +36,7 @@ INSTANTIATE_TEST_SUITE_P(
                         {
                                 {"age", ""}
                         },
+                        KeyValuePairExtractorBuilder().build()
                 },
                 {
                         "name: neymar, favorite_movie:,favorite_song:",
@@ -53,7 +44,8 @@ INSTANTIATE_TEST_SUITE_P(
                                 {"name", "neymar"},
                                 {"favorite_movie", ""},
                                 {"favorite_song", ""},
-                        }
+                        },
+                        KeyValuePairExtractorBuilder().build()
                 }
         })
 );
@@ -62,23 +54,25 @@ INSTANTIATE_TEST_SUITE_P(
         MixString,
         KeyValuePairExtractorTest,
         ::testing::ValuesIn(std::initializer_list<LazyKeyValuePairExtractorTestCase> {
-                                    {
-                                            R"(9 ads =nm,  no\:me: neymar, age: 30, daojmskdpoa and a  height:   175, school: lupe\ picasso, team: psg,)",
-                                            {
-                                                    {R"(no:me)", "neymar"},
-                                                    {"age", "30"},
-                                                    {"height", "175"},
-                                                    {"school", "lupe picasso"},
-                                                    {"team", "psg"}
-                                            }
-                                    },
-                                    {
-                                            "XNFHGSSF_RHRUZHVBS_KWBT: F,",
-                                            {
-                                                    {"XNFHGSSF_RHRUZHVBS_KWBT", "F"}
-                                            }
-                                    },
-                            }
+                    {
+                            R"(9 ads =nm,  no\:me: neymar, age: 30, daojmskdpoa and a  height:   1.75, school: lupe\ picasso, team: psg,)",
+                            {
+                                    {R"(no:me)", "neymar"},
+                                    {"age", "30"},
+                                    {"height", "1.75"},
+                                    {"school", "lupe picasso"},
+                                    {"team", "psg"}
+                            },
+                            KeyValuePairExtractorBuilder().withValueSpecialCharacterAllowList({'.'}).build()
+                    },
+                    {
+                            "XNFHGSSF_RHRUZHVBS_KWBT: F,",
+                            {
+                                    {"XNFHGSSF_RHRUZHVBS_KWBT", "F"}
+                            },
+                            KeyValuePairExtractorBuilder().build()
+                    },
+            }
         )
 );
 
@@ -90,13 +84,15 @@ INSTANTIATE_TEST_SUITE_P(
                         "na,me,: neymar, age:30",
                         {
                                 {"age", "30"}
-                        }
+                        },
+                        KeyValuePairExtractorBuilder().build()
                 },
                 {
                         "na$me,: neymar, age:30",
                         {
                                 {"age", "30"}
-                        }
+                        },
+                        KeyValuePairExtractorBuilder().build()
                 },
                 {
                         R"(name: neymar, favorite_quote: Premature\ optimization\ is\ the\ r\$\$t\ of\ all\ evil, age:30)",
@@ -105,10 +101,7 @@ INSTANTIATE_TEST_SUITE_P(
                                 {"favorite_quote", R"(Premature optimization is the r$$t of all evil)"},
                                 {"age", "30"}
                         },
-                        ',',
-                        ':',
-                        '\\',
-                        '"'
+                        KeyValuePairExtractorBuilder().withEnclosingCharacter('"').build()
                 }
         })
 );
@@ -118,17 +111,15 @@ INSTANTIATE_TEST_SUITE_P(
         KeyValuePairExtractorTest,
         ::testing::ValuesIn(std::initializer_list<LazyKeyValuePairExtractorTestCase> {
                 {
-                        R"("name": "Neymar", "age": 30, team: "psg", "favorite_movie": "")",
+                        R"("name": "Neymar", "age": 30, team: "psg", "favorite_movie": "", height: 1.75)",
                         {
                                 {"name", "Neymar"},
                                 {"age", "30"},
                                 {"team", "psg"},
-                                {"favorite_movie", ""}
+                                {"favorite_movie", ""},
+                                {"height", "1.75"}
                         },
-                        ',',
-                        ':',
-                        '\\',
-                        '"'
+                        KeyValuePairExtractorBuilder().withValueSpecialCharacterAllowList({'.'}).withEnclosingCharacter('"').build()
                 }
         })
 );

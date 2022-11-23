@@ -7,9 +7,9 @@
 #include <unordered_set>
 
 #include "KeyValuePairExtractor.h"
-#include "State.h"
-#include "KeyStateHandler.h"
-#include "ValueStateHandler.h"
+#include "impl/state/State.h"
+#include "impl/state/KeyStateHandler.h"
+#include "impl/state/ValueStateHandler.h"
 #include "KeyValuePairEscapingProcessor.h"
 
 /*
