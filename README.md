@@ -1,4 +1,4 @@
-# KeyValuePairFileProcessor
+# KeyValuePairFileExtractor
 
 ### Ideas to improve performance:
 
