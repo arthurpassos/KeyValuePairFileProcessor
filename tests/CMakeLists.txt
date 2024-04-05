@@ -9,9 +9,10 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-enable_testing()
+FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.2/json.tar.xz)
+FetchContent_MakeAvailable(json)
 
-find_package(nlohmann_json 3.2.0 REQUIRED)
+enable_testing()
 
 add_executable(KeyValuePairExtractorTests KeyValuePairExtractorTest.cpp)
 

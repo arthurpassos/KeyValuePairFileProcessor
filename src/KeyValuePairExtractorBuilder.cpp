@@ -1,37 +1,67 @@
-#include "KeyValuePairExtractorBuilder.h"
+#include <impl/state/CHKeyValuePairExtractor.h>
+#include <KeyValuePairExtractorBuilder.h>
+#include "impl/Configuration.h"
+#include "impl/state/StateHandlerImpl.h"
 
-#include <utility>
-#include "impl/LazyEscapingKeyValuePairExtractor.h"
-
-KeyValuePairExtractorBuilder &KeyValuePairExtractorBuilder::withKeyValuePairDelimiter(char key_value_pair_delimiter_) {
-    key_value_pair_delimiter = key_value_pair_delimiter_;
+KeyValuePairExtractorBuilder & KeyValuePairExtractorBuilder::withKeyValueDelimiter(char key_value_delimiter_)
+{
+    key_value_delimiter = key_value_delimiter_;
     return *this;
 }
 
-KeyValuePairExtractorBuilder &KeyValuePairExtractorBuilder::withEscapeCharacter(char escape_character_) {
-    escape_character = escape_character_;
+KeyValuePairExtractorBuilder & KeyValuePairExtractorBuilder::withItemDelimiters(std::vector<char> item_delimiters_)
+{
+    item_delimiters = std::move(item_delimiters_);
     return *this;
 }
 
-KeyValuePairExtractorBuilder &KeyValuePairExtractorBuilder::withItemDelimiter(char item_delimiter_) {
-    item_delimiter = item_delimiter_;
+KeyValuePairExtractorBuilder & KeyValuePairExtractorBuilder::withQuotingCharacter(char quoting_character_)
+{
+    quoting_character = quoting_character_;
     return *this;
 }
 
-KeyValuePairExtractorBuilder & KeyValuePairExtractorBuilder::withEnclosingCharacter(std::optional<char> enclosing_character_) {
-    enclosing_character = enclosing_character_;
+KeyValuePairExtractorBuilder & KeyValuePairExtractorBuilder::withEscaping()
+{
+    with_escaping = true;
     return *this;
 }
 
-KeyValuePairExtractorBuilder &KeyValuePairExtractorBuilder::withValueSpecialCharacterAllowList(std::unordered_set<char> value_special_character_allowlist_) {
-    value_special_character_allowlist = std::move(value_special_character_allowlist_);
+KeyValuePairExtractorBuilder & KeyValuePairExtractorBuilder::withMaxNumberOfPairs(uint64_t max_number_of_pairs_)
+{
+    max_number_of_pairs = max_number_of_pairs_;
     return *this;
 }
 
-std::shared_ptr<KeyValuePairExtractor> KeyValuePairExtractorBuilder::build() {
-    KeyStateHandler keyStateHandler(key_value_pair_delimiter, escape_character, enclosing_character);
-    ValueStateHandler valueStateHandler(escape_character, item_delimiter, enclosing_character, value_special_character_allowlist);
-    KeyValuePairEscapingProcessor escapingProcessor(escape_character);
+std::shared_ptr<KeyValuePairExtractor> KeyValuePairExtractorBuilder::build() const
+{
+    if (with_escaping)
+    {
+        return buildWithEscaping();
+    }
 
-    return std::make_shared<LazyEscapingKeyValuePairExtractor>(keyStateHandler, valueStateHandler, escapingProcessor);
+    return buildWithoutEscaping();
+}
+
+namespace
+{
+    template <typename T>
+    auto makeStateHandler(const T && handler, uint64_t max_number_of_pairs)
+    {
+        return std::make_shared<CHKeyValuePairExtractor<T>>(handler, max_number_of_pairs);
+    }
+}
+
+std::shared_ptr<KeyValuePairExtractor> KeyValuePairExtractorBuilder::buildWithoutEscaping() const
+{
+    auto configuration = extractKV::ConfigurationFactory::createWithoutEscaping(key_value_delimiter, quoting_character, item_delimiters);
+
+    return makeStateHandler(extractKV::NoEscapingStateHandler(configuration), max_number_of_pairs);
+}
+
+std::shared_ptr<KeyValuePairExtractor> KeyValuePairExtractorBuilder::buildWithEscaping() const
+{
+    auto configuration = extractKV::ConfigurationFactory::createWithEscaping(key_value_delimiter, quoting_character, item_delimiters);
+
+    return makeStateHandler(extractKV::InlineEscapingStateHandler(configuration), max_number_of_pairs);
 }

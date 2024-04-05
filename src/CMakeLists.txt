@@ -1,3 +1,18 @@
 cmake_minimum_required(VERSION 3.15...3.23)
 
-add_library(KeyValuePairExtractorLib impl/LazyEscapingKeyValuePairExtractor.cpp KeyValuePairExtractor.h impl/state/KeyStateHandler.cpp impl/state/KeyStateHandler.h impl/state/State.h impl/state/ValueStateHandler.cpp impl/state/ValueStateHandler.h impl/state/StateHandler.cpp impl/state/StateHandler.h impl/KeyValuePairEscapingProcessor.h impl/KeyValuePairEscapingProcessor.cpp KeyValuePairExtractorBuilder.cpp KeyValuePairExtractorBuilder.h)
+add_library(KeyValuePairExtractorLib KeyValuePairExtractor.h KeyValuePairExtractorBuilder.cpp KeyValuePairExtractorBuilder.h
+        impl/state/StateHandlerImpl.h
+        impl/Configuration.cpp
+        EscapeSequenceParser.cpp
+        EscapeSequenceParser.h
+        BufferBase.cpp
+        BufferBase.h
+        ReadBuffer.cpp
+        ReadBuffer.cpp
+        ReadBuffer.h
+        ReadBufferFromMemory.cpp
+        ReadBufferFromMemory.h
+        SeekableReadBuffer.cpp
+        SeekableReadBuffer.h
+        WithFileSize.cpp
+        WithFileSize.h)

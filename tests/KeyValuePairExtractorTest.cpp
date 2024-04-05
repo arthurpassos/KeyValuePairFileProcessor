@@ -63,7 +63,7 @@ INSTANTIATE_TEST_SUITE_P(
                                     {"school", "lupe picasso"},
                                     {"team", "psg"}
                             },
-                            KeyValuePairExtractorBuilder().withValueSpecialCharacterAllowList({'.'}).build()
+                            KeyValuePairExtractorBuilder().build()
                     },
                     {
                             "XNFHGSSF_RHRUZHVBS_KWBT: F,",
@@ -101,7 +101,7 @@ INSTANTIATE_TEST_SUITE_P(
                                 {"favorite_quote", R"(Premature optimization is the r$$t of all evil)"},
                                 {"age", "30"}
                         },
-                        KeyValuePairExtractorBuilder().withEnclosingCharacter('"').build()
+                        KeyValuePairExtractorBuilder().withQuotingCharacter('"').build()
                 }
         })
 );
@@ -119,7 +119,7 @@ INSTANTIATE_TEST_SUITE_P(
                                 {"favorite_movie", ""},
                                 {"height", "1.75"}
                         },
-                        KeyValuePairExtractorBuilder().withValueSpecialCharacterAllowList({'.'}).withEnclosingCharacter('"').build()
+                        KeyValuePairExtractorBuilder().withQuotingCharacter('"').build()
                 }
         })
 );
@@ -141,7 +141,7 @@ TEST(KeyValuePairExtractorTests, MixString2) {
 
     auto expected_output = expected_output_json.get<std::unordered_map<std::string, std::string>>();
 
-    auto processor = KeyValuePairExtractorBuilder().withKeyValuePairDelimiter('=').build();
+    auto processor = KeyValuePairExtractorBuilder().withKeyValueDelimiter('=').build();
 
     auto result = processor->extract(input_string);
 
@@ -165,9 +165,20 @@ TEST(KeyValuePairExtractorTests, MixString3) {
 
     auto expected_output = expected_output_json.get<std::unordered_map<std::string, std::string>>();
 
-    auto processor = KeyValuePairExtractorBuilder().withEnclosingCharacter('"').build();
+    auto processor = KeyValuePairExtractorBuilder().withQuotingCharacter('"').build();
 
     auto result = processor->extract(input_string);
 
     EXPECT_EQ(result, expected_output);
 }
+
+TEST(KeyValuePairExtractorTests, Simplest) {
+    auto processor = KeyValuePairExtractorBuilder().build();
+
+    auto result = processor->extract("name:arthur");
+
+    std::unordered_map<std::string, std::string> expected_output { {"name", "arthur"}};
+
+    EXPECT_EQ(result, expected_output);
+}
+
