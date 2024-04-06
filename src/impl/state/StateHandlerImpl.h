@@ -343,15 +343,10 @@ namespace extractKV
          * */
         class StringWriter
         {
-            // TODO consider other alternatives
-            std::string & element_str;
-
             std::string_view element;
 
         public:
-            explicit StringWriter(std::string & element_str_)
-                    : element_str(element_str_)
-            {}
+            StringWriter() = default;
 
             ~StringWriter()
             {
@@ -383,12 +378,11 @@ namespace extractKV
                 return element.empty();
             }
 
-            // todo fixme
-            std::string commit()
+            std::string_view commit()
             {
-                element_str = std::string(element.begin(), element.size());
+                auto temp = element;
                 reset();
-                return element_str;
+                return temp;
             }
 
             std::string_view uncommittedChunk() const
@@ -410,9 +404,8 @@ namespace extractKV
             uint64_t prev_commit_pos;
 
         public:
-            explicit StringWriter(std::string & element_)
-                    : element(element_),
-                      prev_commit_pos(element.size())
+            StringWriter()
+            : prev_commit_pos(element.size())
             {}
 
             ~StringWriter()
@@ -437,8 +430,7 @@ namespace extractKV
 
             void reset()
             {
-                // todo check if it assumes reserved
-                element.resize(prev_commit_pos);
+                element.clear();
             }
 
             bool isEmpty() const

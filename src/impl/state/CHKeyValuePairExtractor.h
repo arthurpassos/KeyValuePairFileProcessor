@@ -28,11 +28,8 @@ public:
 
         Response response;
 
-        std::string key;
-        std::string value;
-
-        auto key_writer = typename StateHandler::StringWriter(key);
-        auto value_writer = typename StateHandler::StringWriter(value);
+        auto key_writer = typename StateHandler::StringWriter();
+        auto value_writer = typename StateHandler::StringWriter();
 
         uint64_t row_offset = 0;
 
@@ -110,7 +107,7 @@ private:
             throw std::runtime_error ("Number of pairs produced exceeded the limit of " + std::to_string(max_number_of_pairs));
         }
 
-        response[key.commit()] = value.commit();
+        response[std::string(key.commit())] = std::string(value.commit());
 
         return {0, file.empty() ? State::END : State::WAITING_KEY};
     }
