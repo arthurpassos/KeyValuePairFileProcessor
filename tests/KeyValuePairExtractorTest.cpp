@@ -96,8 +96,37 @@ INSTANTIATE_TEST_SUITE_P(
                         "formula=1+2=3 argument1=1 argument2=2 result=3, char=\"=\" char2== string=\"foo=bar\"",
                         {{"argument1", "1"}, {"argument2", "2"}, {"char", "="}, {"char2", "="}, {"formula", "1+2=3"}, {"result", "3"}, {"string", "foo=bar"}},
                         KeyValuePairExtractorBuilder().withKeyValueDelimiter('=').build()
+                },
+                // non-standard escape characters (i.e not \n, \r, \t and etc), it should accept everything
+                LazyKeyValuePairExtractorTestCase{
+                        R"(currency:\$USD, amount\z:$5\h)",
+                        {{R"(amount\z)", R"($5\h)"}, {"currency", R"(\$USD)"}},
+                        KeyValuePairExtractorBuilder().withItemDelimiters({',', ' '}).build()
+                },
+                // standard escape sequences, it should return it as it is
+                LazyKeyValuePairExtractorTestCase{
+                        "key1:header\nbody key2:start_of_text\tend_of_text",
+                        {{"key1", "header\nbody"}, {"key2", "start_of_text\tend_of_text"}},
+                        KeyValuePairExtractorBuilder().build()
+                },
+                // both comma and semi-colon as pair delimiters
+                LazyKeyValuePairExtractorTestCase{
+                        "name:neymar;age:31;team:psg;nationality:brazil,last_key:last_value",
+                        {{"name", "neymar"}, {"age", "31"}, {"last_key", "last_value"}, {"team", "psg"}, {"nationality", "brazil"}},
+                        KeyValuePairExtractorBuilder().build()
+                },
+                // single quote as quoting character
+                LazyKeyValuePairExtractorTestCase{
+                        "name:'neymar';'age':31;team:psg;nationality:brazil,last_key:last_value",
+                        {{"name", "neymar"}, {"age", "31"}, {"last_key", "last_value"}, {"team", "psg"}, {"nationality", "brazil"}},
+                        KeyValuePairExtractorBuilder().withQuotingCharacter('\'').build()
+                },
+                // should not fail because pair delimiters contains 8 characters, which is within the limit
+                LazyKeyValuePairExtractorTestCase{
+                        "not_important",
+                        {},
+                        KeyValuePairExtractorBuilder().withItemDelimiters({'1', '2', '3', '4', '5', '6', '7', '8'}).build()
                 }
-                // Add more test cases as needed.
         )
 );
 
