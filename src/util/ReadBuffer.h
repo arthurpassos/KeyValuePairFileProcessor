@@ -247,14 +247,3 @@ private:
 //        throw Exception(ErrorCodes::ATTEMPT_TO_READ_AFTER_EOF, "Attempt to read after eof");
     }
 };
-
-
-using ReadBufferPtr = std::shared_ptr<ReadBuffer>;
-
-/// Due to inconsistencies in ReadBuffer-family interfaces:
-///  - some require to fully wrap underlying buffer and own it,
-///  - some just wrap the reference without ownership,
-/// we need to be able to wrap reference-only buffers with movable transparent proxy-buffer.
-/// The uniqueness of such wraps is responsibility of the code author.
-std::unique_ptr<ReadBuffer> wrapReadBufferReference(ReadBuffer & ref);
-std::unique_ptr<ReadBuffer> wrapReadBufferPointer(ReadBufferPtr ptr);

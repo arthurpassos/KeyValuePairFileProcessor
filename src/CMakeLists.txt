@@ -5,14 +5,7 @@ add_library(KeyValuePairExtractorLib KeyValuePairExtractor.h KeyValuePairExtract
         impl/Configuration.cpp
         EscapeSequenceParser.cpp
         EscapeSequenceParser.h
-        BufferBase.cpp
-        BufferBase.h
-        ReadBuffer.cpp
-        ReadBuffer.cpp
-        ReadBuffer.h
-        ReadBufferFromMemory.cpp
-        ReadBufferFromMemory.h
-        SeekableReadBuffer.cpp
-        SeekableReadBuffer.h
-        WithFileSize.cpp
-        WithFileSize.h)
+        util/BufferBase.cpp
+        util/ReadBufferFromMemory.cpp
+        util/SeekableReadBuffer.cpp
+        util/WithFileSize.cpp)

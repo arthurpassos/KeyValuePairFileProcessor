@@ -1,13 +1,13 @@
 #pragma once
 
-#include <find_symbols.h>
+#include <util/find_symbols.h>
 #include <impl/state/StateHandler.h>
 #include <impl/NeedleFactory.h>
 #include <impl/Configuration.h>
 #include <string_view>
 #include <string>
 #include <vector>
-#include "ReadBufferFromMemory.h"
+#include <util/ReadBufferFromMemory.h>
 #include "EscapeSequenceParser.h"
 
 namespace extractKV

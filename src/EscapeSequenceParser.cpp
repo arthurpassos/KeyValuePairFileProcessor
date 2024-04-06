@@ -2,7 +2,7 @@
 
 #include <string>
 #include <stdexcept>
-#include "ReadBuffer.h"
+#include <util/ReadBuffer.h>
 
 inline bool isControlASCII(char c)
 {
