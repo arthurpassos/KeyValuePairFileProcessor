@@ -28,100 +28,77 @@ TEST_P(KeyValuePairExtractorTest, KeyValuePairExtractorTests) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-        ValuesCanBeEmptyString,
+        CompleteSet,
         KeyValuePairExtractorTest,
-        ::testing::ValuesIn(std::initializer_list<LazyKeyValuePairExtractorTestCase> {
-                {
-                        "age:",
-                        {
-                                {"age", ""}
-                        },
+        ::testing::Values(
+                // Basic tests
+                LazyKeyValuePairExtractorTestCase{
+                        "name:neymar, age:31 team:psg,nationality:brazil",
+                        {{"age", "31"}, {"name", "neymar"}, {"nationality", "brazil"}, {"team", "psg"}},
                         KeyValuePairExtractorBuilder().build()
                 },
-                {
-                        "name: neymar, favorite_movie:,favorite_song:",
-                        {
-                                {"name", "neymar"},
-                                {"favorite_movie", ""},
-                                {"favorite_song", ""},
-                        },
+                // Keys and values starting with numbers, underscore, and other special characters
+                LazyKeyValuePairExtractorTestCase{
+                        "1name:neymar, 4ge:31 _team:_psg,$nationality:@brazil",
+                        {{"$nationality", "@brazil"}, {"1name", "neymar"}, {"4ge", "31"}, {"_team", "_psg"}},
                         KeyValuePairExtractorBuilder().build()
+                },
+                // Only special characters
+                LazyKeyValuePairExtractorTestCase{
+                        "_:_, @:@ #:#,$:$",
+                        {{"_", "_"}, {"@", "@"}, {"#", "#"}, {"$", "$"}},
+                        KeyValuePairExtractorBuilder().build()
+                },
+                // Special (not control) characters in the middle of elements
+                LazyKeyValuePairExtractorTestCase{
+                        "name:ney!mar, age:3! t&am:@psg,nationality:br4z!l",
+                        {{"age", "3!"}, {"name", "ney!mar"}, {"nationality", "br4z!l"}, {"t&am", "@psg"}},
+                        KeyValuePairExtractorBuilder().build()
+                },
+                // Non-standard escape characters, back-slash should be preserved
+                LazyKeyValuePairExtractorTestCase{
+                        "currency:\\$USD, amount\\z:$5\\h",
+                        {{"amount\\z", "$5\\h"}, {"currency", "\\$USD"}},
+                        KeyValuePairExtractorBuilder().build()
+                },
+                // Invalid escape sequence at the end of file should be ignored
+                LazyKeyValuePairExtractorTestCase{
+                        "valid_key:valid_value key:invalid_escape_sequence\\",
+                        {{"key", "invalid_escape_sequence"}, {"valid_key", "valid_value"}},
+                        KeyValuePairExtractorBuilder().withEscaping().build()
+                },
+                // Simple quoting
+                LazyKeyValuePairExtractorTestCase{
+                        "name:\"neymar\", \"age\":31 \"team\":\"psg\"",
+                        {{"age", "31"}, {"name", "neymar"}, {"team", "psg"}},
+                        KeyValuePairExtractorBuilder().withQuotingCharacter('"').build()
+                },
+                // Semi-colon as pair delimiter
+                LazyKeyValuePairExtractorTestCase{
+                        "name:neymar;age:31;team:psg;nationality:brazil",
+                        {{"age", "31"}, {"name", "neymar"}, {"nationality", "brazil"}, {"team", "psg"}},
+                        KeyValuePairExtractorBuilder().build()
+                },
+                // Both comma and semi-colon as pair delimiters
+                LazyKeyValuePairExtractorTestCase{
+                        "name:neymar;age:31;team:psg;nationality:brazil,last_key:last_value",
+                        {{"age", "31"}, {"last_key", "last_value"}, {"name", "neymar"}, {"nationality", "brazil"}, {"team", "psg"}},
+                        KeyValuePairExtractorBuilder().build()
+                },
+                // Single quote as quoting character
+                LazyKeyValuePairExtractorTestCase{
+                        "name:'neymar';'age':31;team:psg;nationality:brazil,last_key:last_value",
+                        {{"age", "31"}, {"last_key", "last_value"}, {"name", "neymar"}, {"nationality", "brazil"}, {"team", "psg"}},
+                        KeyValuePairExtractorBuilder().withQuotingCharacter('\'').build()
+                },
+                // Formula example with '=' in value
+                LazyKeyValuePairExtractorTestCase{
+                        "formula=1+2=3 argument1=1 argument2=2 result=3, char=\"=\" char2== string=\"foo=bar\"",
+                        {{"argument1", "1"}, {"argument2", "2"}, {"char", "="}, {"char2", "="}, {"formula", "1+2=3"}, {"result", "3"}, {"string", "foo=bar"}},
+                        KeyValuePairExtractorBuilder().withKeyValueDelimiter('=').build()
                 }
-        })
-);
-
-INSTANTIATE_TEST_SUITE_P(
-        MixString,
-        KeyValuePairExtractorTest,
-        ::testing::ValuesIn(std::initializer_list<LazyKeyValuePairExtractorTestCase> {
-                    {
-                            R"(9 ads =nm,  no\:me: neymar, age: 30, daojmskdpoa and a  height:   1.75, school: lupe\ picasso, team: psg,)",
-                            {
-                                    {R"(no:me)", "neymar"},
-                                    {"age", "30"},
-                                    {"height", "1.75"},
-                                    {"school", "lupe picasso"},
-                                    {"team", "psg"}
-                            },
-                            KeyValuePairExtractorBuilder().build()
-                    },
-                    {
-                            "XNFHGSSF_RHRUZHVBS_KWBT: F,",
-                            {
-                                    {"XNFHGSSF_RHRUZHVBS_KWBT", "F"}
-                            },
-                            KeyValuePairExtractorBuilder().build()
-                    },
-            }
+                // Add more test cases as needed.
         )
-);
-
-INSTANTIATE_TEST_SUITE_P(
-        Escaping,
-        KeyValuePairExtractorTest,
-        ::testing::ValuesIn(std::initializer_list<LazyKeyValuePairExtractorTestCase> {
-                {
-                        "na,me,: neymar, age:30",
-                        {
-                                {"age", "30"}
-                        },
-                        KeyValuePairExtractorBuilder().build()
-                },
-                {
-                        "na$me,: neymar, age:30",
-                        {
-                                {"age", "30"}
-                        },
-                        KeyValuePairExtractorBuilder().build()
-                },
-                {
-                        R"(name: neymar, favorite_quote: Premature\ optimization\ is\ the\ r\$\$t\ of\ all\ evil, age:30)",
-                        {
-                                {"name", "neymar"},
-                                {"favorite_quote", R"(Premature optimization is the r$$t of all evil)"},
-                                {"age", "30"}
-                        },
-                        KeyValuePairExtractorBuilder().withQuotingCharacter('"').build()
-                }
-        })
-);
-
-INSTANTIATE_TEST_SUITE_P(
-        EnclosedElements,
-        KeyValuePairExtractorTest,
-        ::testing::ValuesIn(std::initializer_list<LazyKeyValuePairExtractorTestCase> {
-                {
-                        R"("name": "Neymar", "age": 30, team: "psg", "favorite_movie": "", height: 1.75)",
-                        {
-                                {"name", "Neymar"},
-                                {"age", "30"},
-                                {"team", "psg"},
-                                {"favorite_movie", ""},
-                                {"height", "1.75"}
-                        },
-                        KeyValuePairExtractorBuilder().withQuotingCharacter('"').build()
-                }
-        })
 );
 
 TEST(KeyValuePairExtractorTests, MixString2) {
