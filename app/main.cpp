@@ -28,7 +28,15 @@ auto parse_arguments(int argc, char * argv[])
 
     argparse::ArgumentParser program("key_value_pair_extractor");
 
-    program.add_argument("-i", "--input").default_value("").help("Raw ASCII string");
+    program.add_argument("-i", "--input").help("Raw ASCII string");
+    program.add_argument("-f", "--file").help("Path to file containing raw ASCII string");
+    program.add_argument("-o", "--output").help("Path to output file");
+    program.add_argument("-kvd", "--key-value-delimiter").help("Key-value delimiter, sits between key and value");
+    program.add_argument("-itd", "--item-delimiters").nargs(0, 99).help("Item delimiters, separates pairs from each other. Multiple values are allowed");
+    program.add_argument("-e", "--escaping-character").help("Character used for escaping");
+    program.add_argument("-mnp", "--max-number-of-pairs")
+    .scan<'u', uint32_t>()
+    .help("Maximum number of key-value pairs to extract. Helpful to avoid memory exhaustion in case of a corrupted input file");
 
     try {
         program.parse_args(argc, argv);
@@ -39,7 +47,46 @@ auto parse_arguments(int argc, char * argv[])
         std::exit(1);
     }
 
-    arguments.input = program.get("input");
+    if (program.present("input"))
+    {
+        arguments.input = program.get("input");
+    }
+
+    if (program.present("file"))
+    {
+        arguments.input_path = program.get("file");
+    }
+
+    // assign all fields if present in arguments
+    if (program.present("output"))
+    {
+        arguments.output_path = program.get("output");
+    }
+
+    if (program.present("key-value-delimiter"))
+    {
+        arguments.key_value_delimiter = program.get<std::string>("key-value-delimiter")[0];
+    }
+
+    if (program.present("item-delimiters"))
+    {
+        auto string_array = program.get<std::vector<std::string>>("item-delimiters");
+        arguments.item_delimiters = std::vector<char>();
+        for (const auto & item : string_array)
+        {
+            arguments.item_delimiters.value().push_back(item[0]);
+        }
+    }
+
+    if (program.present("escaping-character"))
+    {
+        arguments.escaping_character = program.get<std::string>("escaping-character")[0];
+    }
+
+    if (program.present<uint32_t>("max-number-of-pairs"))
+    {
+        arguments.max_number_of_pairs = program.get<uint32_t>("max-number-of-pairs");
+    }
 
     return arguments;
 }
