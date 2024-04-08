@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <nlohmann/json.hpp>
 #include <fstream>
-#include "KeyValuePairExtractorBuilder.h"
+#include <KeyValuePairExtractorBuilder.h>
 
 
 struct LazyKeyValuePairExtractorTestCase {

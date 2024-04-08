@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15...3.23)
 
-add_library(KeyValuePairExtractorLib KeyValuePairExtractor.h KeyValuePairExtractorBuilder.cpp KeyValuePairExtractorBuilder.h
-        impl/state/StateHandlerImpl.h
+add_library(KeyValuePairExtractorLib
+        KeyValuePairExtractorBuilder.cpp
         impl/Configuration.cpp
         impl/EscapeSequenceParser.cpp
         impl/EscapeSequenceParser.h
