@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <string>
+#include <impl/Configuration.h>
 
 /*
 TODO    Update docs
@@ -12,4 +13,6 @@ struct KeyValuePairExtractor {
     virtual ~KeyValuePairExtractor() = default;
 
     virtual Response extract(const std::string & file) = 0;
+
+    virtual extractKV::Configuration getConfiguration() const = 0;
 };

@@ -52,6 +52,11 @@ public:
         return response;
     }
 
+    extractKV::Configuration getConfiguration() const override
+    {
+        return state_handler.configuration;
+    }
+
 private:
 
     NextState processState(std::string_view file, State state, auto & key, auto & value, uint64_t & row_offset, Response & response)
