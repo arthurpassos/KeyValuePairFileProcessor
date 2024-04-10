@@ -9,3 +9,5 @@ add_library(KeyValuePairExtractorLib
         util/ReadBufferFromMemory.cpp
         util/SeekableReadBuffer.cpp
         util/WithFileSize.cpp)
+
+target_include_directories(KeyValuePairExtractorLib PUBLIC .)
