@@ -21,6 +21,8 @@ struct Arguments
 
     std::optional<uint32_t> max_number_of_pairs;
 
+    bool escape = false;
+
     bool verbose = false;
 };
 
@@ -92,6 +94,8 @@ auto parse_arguments(int argc, char * argv[])
         arguments.max_number_of_pairs = program.get<uint32_t>("max-number-of-pairs");
     }
 
+    arguments.escape = program.get<bool>("escape");
+
     arguments.verbose = program.get<bool>("verbose");
 
     return arguments;
@@ -121,7 +125,33 @@ auto make_extractor(const Arguments & program_arguments)
         builder.withMaxNumberOfPairs(program_arguments.max_number_of_pairs.value());
     }
 
+    if (program_arguments.escape)
+    {
+        builder.withEscaping();
+    }
+
     return builder.build();
+}
+
+void print_program_arguments(const auto & arguments)
+{
+    std::cout<<"Program arguments: \n";
+    std::cout<<"Input: "<<arguments.input.value_or("not set")<<"\n";
+    std::cout<<"Input path: "<<arguments.input_path.value_or("not set")<<"\n";
+    std::cout<<"Output path: "<<arguments.output_path.value_or("not set")<<"\n";
+}
+
+void print_extractor_configuration(const auto & configuration)
+{
+    std::cout<<"Extractor configuration:\n";
+    std::cout<<"Key-value delimiter: "<<configuration.key_value_delimiter<<"\n";
+    std::cout<<"Item delimiters: ";
+    for (const auto & item : configuration.pair_delimiters)
+    {
+        std::cout<<item<<" ";
+    }
+    std::cout<<"\n";
+    std::cout<<"Quoting character: "<<configuration.quoting_character<<"\n";
 }
 
 int main(int argc, char * argv[])
@@ -133,26 +163,14 @@ int main(int argc, char * argv[])
     // todo add a proper logger that takes logger level and compares against global verbosity level
     if (program_arguments.verbose)
     {
-        std::cout<<"Program arguments: \n";
-        std::cout<<"Input: "<<program_arguments.input.value_or("not set")<<"\n";
-        std::cout<<"Input path: "<<program_arguments.input_path.value_or("not set")<<"\n";
-        std::cout<<"Output path: "<<program_arguments.output_path.value_or("not set")<<"\n";
-
-        const auto configuration = extractor->getConfiguration();
-
-        std::cout<<"Extractor configuration:\n";
-        std::cout<<"Key-value delimiter: "<<configuration.key_value_delimiter<<"\n";
-        std::cout<<"Item delimiters: ";
-        for (const auto & item : configuration.pair_delimiters)
-        {
-            std::cout<<item<<" ";
-        }
-        std::cout<<"\n";
-        std::cout<<"Quoting character: "<<configuration.quoting_character<<"\n";
+        print_program_arguments(program_arguments);
+        print_extractor_configuration(extractor->getConfiguration());
 
         std::cout << "--------------------------------\n";
 
         std::cout << "Starting extraction...\n";
+
+        std::cout << "--------------------------------\n";
     }
 
     auto map = extractor->extract(program_arguments.input.value());
