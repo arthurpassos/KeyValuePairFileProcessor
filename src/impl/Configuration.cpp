@@ -10,14 +10,14 @@ namespace extractKV
     {
     }
 
-    Configuration ConfigurationFactory::createWithoutEscaping(char key_value_delimiter, char quoting_character, std::vector<char> pair_delimiters)
+    Configuration ConfigurationFactory::createWithoutEscaping(char key_value_delimiter, char quoting_character, const std::vector<char> & pair_delimiters)
     {
         validate(key_value_delimiter, quoting_character, pair_delimiters);
 
         return {key_value_delimiter, quoting_character, pair_delimiters};
     }
 
-    Configuration ConfigurationFactory::createWithEscaping(char key_value_delimiter, char quoting_character, std::vector<char> pair_delimiters)
+    Configuration ConfigurationFactory::createWithEscaping(char key_value_delimiter, char quoting_character, const std::vector<char> & pair_delimiters)
     {
         static constexpr char ESCAPE_CHARACTER = '\\';
 

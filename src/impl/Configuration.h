@@ -28,9 +28,9 @@ namespace extractKV
     struct ConfigurationFactory
     {
     public:
-        static Configuration createWithoutEscaping(char key_value_delimiter, char quoting_character, std::vector<char> pair_delimiters);
+        static Configuration createWithoutEscaping(char key_value_delimiter, char quoting_character, const std::vector<char> & pair_delimiters);
 
-        static Configuration createWithEscaping(char key_value_delimiter, char quoting_character, std::vector<char> pair_delimiters);
+        static Configuration createWithEscaping(char key_value_delimiter, char quoting_character, const std::vector<char> & pair_delimiters);
 
     private:
         static void validate(char key_value_delimiter, char quoting_character, std::vector<char> pair_delimiters);
