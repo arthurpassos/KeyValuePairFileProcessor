@@ -1,7 +1,9 @@
 # KeyValuePairFileExtractor
 
-### Ideas to improve performance:
+Pet project based on my extractKeyValuePairs [implementation](https://github.com/ClickHouse/ClickHouse/pull/43606) in ClickHouse.
 
-#### Lazy escaping:
+This version is still not optimized and might not be, it all depends on my availability.
 
-1. store an extra bool flag alongside the view to indicate whether that particular string needs escaping
+Code not organized.
+
+Just for fun.
